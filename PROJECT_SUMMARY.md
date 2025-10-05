@@ -160,20 +160,6 @@ eu → us  # When market closed
 - TESTING.md: Testing guide with manual scenarios and CI/CD
 - PROJECT_SUMMARY.md: This overview
 
-## Comparison with Traditional Tools
-
-Traditional Tools:
-- Updating base overwrites customizations
-- Regional updates require editing multiple files
-- Finding configuration issues requires manual search
-- Emergency fixes must follow standard promotion flow
-
-ConfigHub:
-- Push-upgrade preserves customizations during base updates
-- WHERE clauses enable bulk operations across regions
-- SQL-like queries locate configurations
-- Lateral promotion bypasses standard flow when needed
-
 ## Tutorial Design
 
 The tutorial introduces ConfigHub concepts progressively:
@@ -188,7 +174,7 @@ The tutorial introduces ConfigHub concepts progressively:
 
 Each feature is introduced when it addresses a specific use case.
 
-## Learning Objectives
+## Objectives
 
 After completing this tutorial, you should be able to:
 
