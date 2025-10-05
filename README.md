@@ -214,6 +214,12 @@ traderx-prod-asia/
 
 Propagate base changes while preserving regional customizations.
 
+**Why base configurations exist:**
+- Update application version in one place → flows to all variants
+- Regional customizations (replicas) preserved during upgrades
+- Single source of truth for shared configuration
+- Without base: Must update each region manually, risking inconsistency
+
 ```bash
 # Create base + regions with inheritance
 cub space create traderx-base
@@ -239,6 +245,9 @@ cub unit update trade-service --space traderx-base \
 # Check which variants need upgrading
 cub unit tree --node=space trade-service --space "*" \
   --columns Space.Slug,UpgradeNeeded
+
+# Dry-run to preview changes before applying
+cub unit update --dry-run --upgrade --patch --space "traderx-prod-us"
 
 # Push upgrade (preserves regional replicas!)
 cub unit update --upgrade --patch --space "traderx-prod-*"
