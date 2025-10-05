@@ -1,5 +1,7 @@
 # ConfigHub Tutorial
 
+WARNING - still testing this.  
+
 A 7-stage tutorial that demonstrates ConfigHub concepts through building a simplified trading platform with multi-region deployment.
 
 ---
