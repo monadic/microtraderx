@@ -8,7 +8,7 @@ A progressive tutorial demonstrating ConfigHub's core features through TraderX d
 
 - **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - Stage-by-stage visual progression with ASCII diagrams
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
-- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with DevOps applications (Stages 8-10)
+- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with DevOps applications
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
 - **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and reading paths by persona
@@ -33,7 +33,7 @@ These two scripts encapsulate the essential ConfigHub workflow.
 
 ---
 
-## Stage 1: Hello TraderX (2 min)
+## Stage 1: Hello TraderX
 
 ```bash
 # setup-structure
@@ -54,7 +54,7 @@ traderx/
 
 ---
 
-## Stage 2: Three Environments (3 min)
+## Stage 2: Three Environments
 
 ```bash
 # setup-structure
@@ -81,7 +81,7 @@ traderx-prod/
 
 ---
 
-## Stage 3: Three Regions, Three Trading Volumes (5 min)
+## Stage 3: Three Regions, Three Trading Volumes
 
 Deploy the same platform with region-specific scaling based on trading volume.
 
@@ -317,7 +317,7 @@ cub unit update --upgrade --patch  # Push algorithm updates
 
 ---
 
-## The Two Scripts (Complete TraderX)
+## The Two Scripts
 
 ### setup-structure
 ```bash
@@ -390,13 +390,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 
 ### Stage-by-Stage Progression
 See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for visual progression through all 7 stages:
-- Stage 1: Hello TraderX (spaces + units + workers)
-- Stage 2: Three Environments (dev → staging → prod)
-- Stage 3: Three Regions (regional scaling: 3, 5, 2 replicas)
-- Stage 4: Push-Upgrade (inherit + propagate + preserve)
-- Stage 5: Find and Fix (SQL-like WHERE clauses)
-- Stage 6: Atomic Updates (changesets for consistency)
-- Stage 7: Emergency Bypass (lateral promotion for critical fixes)
+- Stage 1: Hello TraderX
+- Stage 2: Three Environments
+- Stage 3: Three Regions
+- Stage 4: Push-Upgrade
+- Stage 5: Find and Fix
+- Stage 6: Atomic Updates
+- Stage 7: Emergency Bypass
 
 Each stage includes:
 - ASCII art diagrams showing the structure
@@ -406,7 +406,7 @@ Each stage includes:
 - Real-world scenarios
 
 **Recommended learning path**:
-1. Read this README for overview (10 minutes)
-2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage (15 minutes)
-3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details (20 minutes)
-4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md) (10 minutes)
+1. Read this README for overview
+2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
+3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
+4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md)
