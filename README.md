@@ -8,6 +8,7 @@ Start simple. Add power only when needed.
 
 - **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - Stage-by-stage visual progression with ASCII diagrams
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
+- **[MODULAR-APPS.md](MODULAR-APPS.md)** ⭐ - **NEW!** Extend MicroTraderX with DevOps apps (Stages 8-10)
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
 - **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and reading paths by persona
