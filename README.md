@@ -1,6 +1,6 @@
-# ConfigHub in 10 Minutes: The Essence
+# ConfigHub in 10 Minutes
 
-Start simple. Add power only when needed.
+A progressive tutorial demonstrating ConfigHub's core features through TraderX deployment.
 
 ---
 
@@ -8,29 +8,29 @@ Start simple. Add power only when needed.
 
 - **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - Stage-by-stage visual progression with ASCII diagrams
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
-- **[MODULAR-APPS.md](MODULAR-APPS.md)** ⭐ - **NEW!** Extend MicroTraderX with DevOps apps (Stages 8-10)
+- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with DevOps applications (Stages 8-10)
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
 - **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and reading paths by persona
 
-**New to ConfigHub?** Start with [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see the progression through all 7 stages with clear diagrams.
+For visual learners: [VISUAL-GUIDE.md](VISUAL-GUIDE.md) provides diagrams for each stage.
 
-**Not sure where to start?** See [DOCS-MAP.md](DOCS-MAP.md) for recommended reading paths based on your role (learner, developer, architect, tester).
+For navigation help: [DOCS-MAP.md](DOCS-MAP.md) organizes documentation by role and topic.
 
 ---
 
-## 💡 ConfigHub Philosophy
-> **ConfigHub is a configuration database with a state machine.** Every change is tracked, queryable, and reversible. It's not just about deployment - it's about understanding your configuration state over time. ConfigHub is ALWAYS the source of truth; Kubernetes is just the execution layer.
+## ConfigHub Architecture
+> ConfigHub is a configuration database with a state machine. Every change is tracked, queryable, and reversible. ConfigHub maintains the desired state as the source of truth; Kubernetes reflects the executed state.
 > — Brian Grant, ConfigHub inventor
 
-## The Core Pattern: Two Scripts Rule Everything
+## Core Implementation Pattern
 
 ```bash
 ./setup-structure   # Creates spaces, units, relationships
-./deploy           # Makes it real in Kubernetes
+./deploy           # Deploys to Kubernetes via Workers
 ```
 
-That's it. Everything else is details.
+These two scripts encapsulate the essential ConfigHub workflow.
 
 ---
 
@@ -51,7 +51,7 @@ traderx/
 └── reference-data (market data service)
 ```
 
-✅ **Essence**: Space contains units. Worker deploys them.
+**Key concept**: Spaces contain units. Workers deploy them to Kubernetes.
 
 ---
 
@@ -78,13 +78,13 @@ traderx-prod/
 └── reference-data (deployed) ✓
 ```
 
-✅ **Essence**: Spaces are environments. Copy promotes config.
+**Key concept**: Each environment is a separate space. Copy operations promote configurations.
 
 ---
 
 ## Stage 3: Three Regions, Three Trading Volumes (5 min)
 
-**The Power Move**: Same trading platform, different scale per region.
+Deploy the same platform with region-specific scaling based on trading volume.
 
 ```bash
 # setup-structure
@@ -127,13 +127,13 @@ traderx-prod-asia/
 └── trade-service (replicas: 2) ✓  # Overnight trading
 ```
 
-✅ **Essence**: Each region has custom scale. Real business logic!
+**Key concept**: Regional customization based on actual business requirements.
 
 ---
 
-## Stage 4: Push Changes, Keep Regional Scale
+## Stage 4: Push-Upgrade Pattern
 
-**The Killer Feature**: Update base → flows everywhere, keeps local changes.
+Propagate base changes while preserving regional customizations.
 
 ```bash
 # Create base + regions with inheritance
@@ -174,14 +174,14 @@ traderx-base/
     └── prod-asia/trade-service (v2, replicas: 2) ✓  # Kept 2!
 ```
 
-✅ **Essence**: Algorithm updated everywhere. Regional scale preserved. Magic!
+**Key concept**: Inheritance with merge capabilities. Base updates propagate while local overrides persist.
 
 ---
 
-## Stage 5: Find and Fix Problems Everywhere
+## Stage 5: Query and Filter Operations
 
 ```bash
-# Create a REUSABLE filter for high-volume services (save once, use everywhere!)
+# Create a reusable filter for high-volume services
 cub filter create high-volume-trading Unit \
   --where-field "Data CONTAINS 'replicas:' AND
                  Data NOT LIKE '%replicas: 1%' AND
@@ -204,41 +204,40 @@ cub unit list --space "*" \
   --where "Data CONTAINS 'image:' AND Data CONTAINS ':v1'"
 ```
 
-✅ **Essence**: SQL queries across regions. Filters = reusable saved queries. Fix problems globally.
+**Key concept**: SQL-like WHERE clauses work across all spaces. Filters provide reusable query definitions.
 
 ---
 
 ## Stage 6: Atomic Multi-Service Updates
 
 ```bash
-# New market data format requires updating BOTH services
-# They MUST deploy together or trading breaks!
+# New market data format requires updating both services together
 
-# Changesets coordinate changes across TEAMS and SERVICES
-cub changeset create market-data-v2  # Can have owner, approvers!
+# Changesets coordinate changes across teams and services
+cub changeset create market-data-v2  # Supports ownership and approval workflows
 cub unit update reference-data --space traderx-prod-us \
   --patch '{"image": "reference-data:v2"}'  # Data team's change
 cub unit update trade-service --space traderx-prod-us \
   --patch '{"image": "trade-service:v2"}'   # Trading team's change
-cub changeset apply market-data-v2  # Both teams ready? Deploy atomically!
+cub changeset apply market-data-v2  # Atomic deployment when both teams are ready
 ```
 
 ```
 Changeset: market-data-v2
 ├── reference-data (v1 → v2: owned by data-team)
 └── trade-service (v1 → v2: owned by trading-team)
-Apply: ✓ Atomic! Both teams coordinated!
+Status: Applied atomically
 ```
 
-✅ **Essence**: Changesets coordinate teams AND services. Atomic deployment across boundaries.
+**Key concept**: Changesets ensure related changes deploy together or not at all. Supports team coordination.
 
 ---
 
-## Stage 7: Emergency Bypass (Lateral Promotion)
+## Stage 7: Lateral Promotion for Emergency Changes
 
 ```bash
 # Normal flow: dev → staging → us → eu → asia
-# But EU discovered critical trading bug at market open!
+# EU discovered critical trading bug at market open
 
 # Emergency fix directly in EU
 cub run set-env-var --env-var CIRCUIT_BREAKER=true \
@@ -251,10 +250,10 @@ cub revision list trade-service --space traderx-prod-eu --limit 3
 # Rev 46: 2024-01-15 18:00 UTC | system | scale replicas 5→2 (market close)
 # Rev 45: 2024-01-15 08:00 UTC | system | scale replicas 2→5 (market open)
 
-# Asia market opens in 2 hours, need fix NOW (skip US!)
+# Asia market opens in 2 hours, requires fix before opening
 cub unit update trade-service --space traderx-prod-asia \
   --merge-unit traderx-prod-eu/trade-service \
-  --merge-base=46 --merge-end=47  # Merge ONLY the emergency fix!
+  --merge-base=46 --merge-end=47  # Merge only the emergency fix
 
 # US market closed, backfill later
 cub unit update trade-service --space traderx-prod-us \
@@ -263,17 +262,16 @@ cub unit update trade-service --space traderx-prod-us \
 
 ```
 Normal:   dev → staging → us → eu → asia
-Emergency:                 eu → asia  (Fix in 2 hours!)
+Emergency:                 eu → asia  (Bypass US)
                            ↓
-Backfill:                  us  (When market closed)
-Audit Trail: ✓ Every change tracked!
+Backfill:                  us  (After market close)
 ```
 
-✅ **Essence**: Emergency bypass with full audit trail. WHO changed WHAT and WHEN is always known.
+**Key concept**: Lateral promotion enables emergency fixes to bypass normal promotion flow. Full revision history provides audit trail.
 
 ---
 
-## The Complete System (30 seconds to understand)
+## Complete System Structure
 
 ```
 Structure (setup-structure):
@@ -304,19 +302,19 @@ cub unit update --upgrade --patch  # Push algorithm updates
 
 ---
 
-## Why This Matters: The 10-Second Pitch
+## Comparison with Traditional Tools
 
 **Traditional Tools**:
-- Change base = lose customizations
-- Update regions = edit 3 files
-- Find problems = grep everything
-- Emergency fix = follow the process
+- Updating base configurations overwrites customizations
+- Regional updates require editing multiple files
+- Finding configuration issues requires manual search
+- Emergency fixes must follow standard promotion flow
 
 **ConfigHub**:
-- Change base = keep customizations (push-upgrade)
-- Update regions = one command (WHERE)
-- Find problems = SQL query
-- Emergency fix = lateral promotion
+- Push-upgrade preserves customizations during base updates
+- WHERE clauses enable bulk operations across regions
+- SQL-like queries locate configurations
+- Lateral promotion bypasses standard flow when needed
 
 ---
 
@@ -360,31 +358,30 @@ cub unit apply --space "traderx-prod-*" --where "*"
 
 ---
 
-## Learn More When You Need It
+## Additional ConfigHub Features
 
-Start here. When you hit limits, add:
-- **Changesets** for atomic operations (shown in Stage 6)
-- **Filters** for reusable queries (shown in Stage 5)
-- **Triggers** for policy enforcement (e.g., require approvals)
-- **Invocations** for reusable function definitions (standardize operations across teams)
-- **Links** for cross-app relationships
-- **Sets** for logical grouping
-- **Cross-Space Inheritance** for platform-wide standards:
+The patterns above demonstrate core ConfigHub functionality. Additional features include:
+
+- **Changesets** - Atomic operations across multiple units (Stage 6)
+- **Filters** - Reusable query definitions (Stage 5)
+- **Triggers** - Policy enforcement and validation rules
+- **Invocations** - Reusable function definitions for standardized operations
+- **Links** - Define relationships between units
+- **Sets** - Logical grouping of units for bulk operations
+- **Cross-Space Inheritance** - Share configurations across space boundaries:
   ```bash
   cub unit create monitoring --space traderx-prod-us \
     --upstream-unit platform-base/monitoring-standard
   ```
 
-But not before you need them. Simplicity first.
-
-Remember: ConfigHub is a configuration database. Every change is tracked, queryable, and reversible.
+ConfigHub maintains complete change history with rollback capabilities at the unit level.
 
 ---
 
 ## Visual Learning Resources
 
-### 📊 Architecture Diagrams
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams showing:
+### Architecture Diagrams
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 - Complete system architecture (ConfigHub → Kubernetes)
 - 3-region deployment topology (US, EU, Asia)
 - Inheritance flow and upstream/downstream relationships
@@ -392,7 +389,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams showing:
 - Emergency lateral promotion flow
 - Multi-cluster deployment architecture
 
-### 📈 Stage-by-Stage Progression
+### Stage-by-Stage Progression
 See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for visual progression through all 7 stages:
 - Stage 1: Hello TraderX (spaces + units + workers)
 - Stage 2: Three Environments (dev → staging → prod)
@@ -406,11 +403,11 @@ Each stage includes:
 - ASCII art diagrams showing the structure
 - Before/after visualizations
 - Command examples
-- Key learning points
+- Key concepts
 - Real-world scenarios
 
 **Recommended learning path**:
-1. Read this README for the essence (10 minutes)
+1. Read this README for overview (10 minutes)
 2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage (15 minutes)
-3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for deep dive (20 minutes)
+3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details (20 minutes)
 4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md) (10 minutes)
