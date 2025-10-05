@@ -1,21 +1,17 @@
-# ConfigHub in 10 Minutes
+# ConfigHub Tutorial
 
-A progressive tutorial demonstrating ConfigHub's core features through TraderX deployment.
+Demonstrate ConfigHub's core features in stages using a TraderX example app.
 
 ---
 
 ## 📚 Documentation
 
-- **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - Stage-by-stage visual progression with ASCII diagrams
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
-- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with DevOps applications
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
+- **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - ASCII diagrams for each stage
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
-- **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and reading paths by persona
-
-For visual learners: [VISUAL-GUIDE.md](VISUAL-GUIDE.md) provides diagrams for each stage.
-
-For navigation help: [DOCS-MAP.md](DOCS-MAP.md) organizes documentation by role and topic.
+- **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and topic/persona navigation
+- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with "devops" apps
 
 ---
 
