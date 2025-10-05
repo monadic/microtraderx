@@ -73,12 +73,31 @@ $ curl -H "Authorization: Bearer $TOKEN" \
 {"message":"Not Found"}
 ```
 
+### Image Digest Comparison
+
+**Working worker** (created 2 days ago):
+- Image: `ghcr.io/confighubai/confighub-worker:latest`
+- Digest: `sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0`
+- Status: ✅ **Connected and working**
+
+**New workers** (created today):
+- Image: `ghcr.io/confighubai/confighub-worker:latest`
+- Digest: `sha256:0af91d93059e2134b8297fbdce49b1bb7579914dd65cd28365b70b900fec6f55`
+- Status: ❌ **Crashes with 404 error**
+
 ### Hypothesis
 
-The worker pod is configured with the correct worker ID but:
-1. The API endpoint `/api/v1/bridge_workers/{id}` no longer exists or has moved
-2. OR the worker ID format has changed and is incompatible
-3. OR there's an authentication/permission issue with worker lookups
+~~The worker pod is configured with the correct worker ID but the API endpoint doesn't exist.~~
+
+**ACTUAL ROOT CAUSE**: The `:latest` worker image was updated and the new version has a regression:
+1. Both image digests work when using the STREAM endpoint (`/api/bridge_worker/{id}/stream`)
+2. The NEW image tries to call `/api/v1/bridge_workers/{id}` during startup, which returns 404
+3. The OLD image (digest 704352a1) does not make this failing API call
+4. **Note**: Even pinning to the old digest doesn't work - the cached image may have been updated
+
+**This suggests a ConfigHub worker binary regression introduced between:**
+- Old: `sha256:704352a1` (works)
+- New: `sha256:0af91d93` (fails)
 
 ## Environment
 

@@ -24,9 +24,11 @@ case $STAGE in
     cub worker create worker --space traderx 2>/dev/null || echo "Worker already exists"
     cub target create worker "{}" worker --space traderx 2>/dev/null || echo "Target already exists"
 
-    # Install worker to Kubernetes
+    # Install worker to Kubernetes (using pinned working image)
     echo "Installing worker to Kubernetes..."
-    cub worker install worker --space traderx --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+    cub worker install worker --space traderx --export 2>&1 | \
+      sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+      kubectl apply -f - >/dev/null 2>&1 || true
 
     # Set unit target to worker
     cub unit set-target reference-data worker --space traderx || true
@@ -46,9 +48,11 @@ case $STAGE in
     cub worker create worker --space traderx-prod 2>/dev/null || echo "Worker already exists"
     cub target create worker "{}" worker --space traderx-prod 2>/dev/null || echo "Target already exists"
 
-    # Install worker to Kubernetes
+    # Install worker to Kubernetes (using pinned working image)
     echo "Installing worker to Kubernetes..."
-    cub worker install worker --space traderx-prod --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+    cub worker install worker --space traderx-prod --export 2>&1 | \
+      sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+      kubectl apply -f - >/dev/null 2>&1 || true
 
     # Set target and apply
     cub unit set-target reference-data worker --space traderx-prod || true
@@ -68,8 +72,10 @@ case $STAGE in
       cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
       cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
-      # Install worker to Kubernetes
-      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+      # Install worker to Kubernetes (using pinned working image)
+      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | \
+        sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+        kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
@@ -95,8 +101,10 @@ case $STAGE in
       cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
       cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
-      # Install worker to Kubernetes
-      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+      # Install worker to Kubernetes (using pinned working image)
+      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | \
+        sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+        kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
@@ -157,8 +165,10 @@ case $STAGE in
       cub worker create worker-$env --space traderx-$env 2>/dev/null || echo "Worker already exists"
       cub target create worker-$env "{}" worker-$env --space traderx-$env 2>/dev/null || echo "Target already exists"
 
-      # Install worker to Kubernetes
-      cub worker install worker-$env --space traderx-$env --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+      # Install worker to Kubernetes (using pinned working image)
+      cub worker install worker-$env --space traderx-$env --export 2>&1 | \
+        sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+        kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
       cub unit set-target worker-$env --space traderx-$env --where "Slug != ''" || true
@@ -173,8 +183,10 @@ case $STAGE in
       cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
       cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
-      # Install worker to Kubernetes
-      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+      # Install worker to Kubernetes (using pinned working image)
+      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | \
+        sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+        kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
