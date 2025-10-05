@@ -1,0 +1,151 @@
+#!/bin/bash
+set -e
+
+echo "🚀 MicroTraderX: Deploying to Kubernetes..."
+echo ""
+
+# Color codes
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Stage selection
+STAGE=${1:-7}
+
+echo -e "${BLUE}Stage $STAGE: Deploying...${NC}"
+echo ""
+
+case $STAGE in
+  1)
+    echo "Stage 1: Deploy to single space"
+    cub worker install worker --space traderx --wait || true
+    cub unit apply reference-data --space traderx
+
+    echo -e "${GREEN}✓ Deployed reference-data to traderx${NC}"
+    echo ""
+    echo "Check status: kubectl get deployments -n traderx"
+    ;;
+
+  2)
+    echo "Stage 2: Deploy only production"
+    cub worker install worker --space traderx-prod --wait || true
+    cub unit apply reference-data --space traderx-prod
+
+    echo -e "${GREEN}✓ Deployed to traderx-prod${NC}"
+    echo -e "${YELLOW}Note: dev and staging are config-only (not deployed)${NC}"
+    ;;
+
+  3)
+    echo "Stage 3: Deploy all regions with custom scale"
+
+    for region in us eu asia; do
+      echo "  Deploying to traderx-prod-$region..."
+      cub worker install worker-$region --space traderx-prod-$region --wait || true
+      cub unit apply --space traderx-prod-$region --where "*"
+    done
+
+    echo -e "${GREEN}✓ Deployed to all 3 regions${NC}"
+    echo ""
+    echo "Verify regional scale:"
+    echo "  kubectl get deploy trade-service -n traderx-prod-us -o jsonpath='{.spec.replicas}'"
+    echo "  kubectl get deploy trade-service -n traderx-prod-eu -o jsonpath='{.spec.replicas}'"
+    echo "  kubectl get deploy trade-service -n traderx-prod-asia -o jsonpath='{.spec.replicas}'"
+    ;;
+
+  4)
+    echo "Stage 4: Deploy with push-upgrade demo"
+
+    # Deploy all regions
+    for region in us eu asia; do
+      echo "  Deploying to traderx-prod-$region..."
+      cub worker install worker-$region --space traderx-prod-$region --wait || true
+      cub unit apply --space traderx-prod-$region --where "*"
+    done
+
+    echo ""
+    echo -e "${YELLOW}Demo: Update base and push to regions${NC}"
+    echo "  1. Update algorithm in base:"
+    echo "     cub unit update trade-service --space traderx-base \\"
+    echo "       --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"trade-service\",\"env\":[{\"name\":\"TRADING_ALGORITHM\",\"value\":\"v2\"}]}]}}}}'"
+    echo ""
+    echo "  2. Push upgrade (keeps regional replicas!):"
+    echo "     cub unit update --upgrade --patch --space 'traderx-prod-*'"
+    echo ""
+    echo -e "${GREEN}✓ Deployed with inheritance${NC}"
+    ;;
+
+  5)
+    echo "Stage 5: Deploy + Find and Fix demo"
+    ./deploy 4
+
+    echo ""
+    echo -e "${YELLOW}Find and Fix Examples:${NC}"
+    echo "  Scale down EU after market close:"
+    echo "    cub run set-replicas --replicas 2 \\"
+    echo "      --space traderx-prod-eu \\"
+    echo "      --where \"spec.replicas > 2\""
+    echo ""
+    echo "  Find old versions:"
+    echo "    cub unit list --space '*' \\"
+    echo "      --where \"Data CONTAINS 'trade-service:v1'\""
+    ;;
+
+  6)
+    echo "Stage 6: Deploy + Changeset demo"
+    ./deploy 4
+
+    echo ""
+    echo -e "${YELLOW}Changeset Example (run manually):${NC}"
+    echo "  # Both services must update together!"
+    echo "  cub changeset create market-data-v2"
+    echo "  cub unit update reference-data --space traderx-prod-us \\"
+    echo "    --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"reference-data\",\"image\":\"traderx/reference-data:v2\"}]}}}}'"
+    echo "  cub unit update trade-service --space traderx-prod-us \\"
+    echo "    --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"trade-service\",\"image\":\"traderx/trade-service:v2\"}]}}}}'"
+    echo "  cub changeset apply market-data-v2  # Atomic!"
+    ;;
+
+  7)
+    echo "Stage 7: Deploy complete system"
+
+    # Deploy dev/staging
+    for env in dev staging; do
+      echo "  Deploying to traderx-$env..."
+      cub worker install worker-$env --space traderx-$env --wait || true
+      cub unit apply --space traderx-$env --where "*"
+    done
+
+    # Deploy all regions
+    for region in us eu asia; do
+      echo "  Deploying to traderx-prod-$region..."
+      cub worker install worker-$region --space traderx-prod-$region --wait || true
+      cub unit apply --space traderx-prod-$region --where "*"
+    done
+
+    echo -e "${GREEN}✓ Complete system deployed!${NC}"
+    echo ""
+    echo "Environments:"
+    echo "  kubectl get deployments -n traderx-dev"
+    echo "  kubectl get deployments -n traderx-staging"
+    echo "  kubectl get deployments -n traderx-prod-us"
+    echo "  kubectl get deployments -n traderx-prod-eu"
+    echo "  kubectl get deployments -n traderx-prod-asia"
+    echo ""
+    echo -e "${YELLOW}Emergency Bypass Example:${NC}"
+    echo "  # Fix discovered in EU, push to Asia (skip US):"
+    echo "  cub run set-env-var --env-var CIRCUIT_BREAKER=true \\"
+    echo "    --unit trade-service --space traderx-prod-eu"
+    echo "  cub unit update trade-service --space traderx-prod-asia \\"
+    echo "    --merge-unit traderx-prod-eu/trade-service"
+    ;;
+
+  *)
+    echo "Usage: $0 [stage]"
+    echo "Stages: 1-7 (default: 7)"
+    exit 1
+    ;;
+esac
+
+echo ""
+echo -e "${BLUE}Deployment complete!${NC}"

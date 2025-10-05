@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reference-data
+  labels:
+    app: reference-data
+    component: market-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reference-data
+  template:
+    metadata:
+      labels:
+        app: reference-data
+        component: market-data
+    spec:
+      containers:
+      - name: reference-data
+        image: traderx/reference-data:v1
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SERVICE_NAME
+          value: "reference-data"
+        - name: MARKET_DATA_SOURCE
+          value: "NYSE,NASDAQ,LSE"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reference-data
+  labels:
+    app: reference-data
+spec:
+  selector:
+    app: reference-data
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  type: ClusterIP
