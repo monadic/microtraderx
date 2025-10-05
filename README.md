@@ -19,6 +19,10 @@ Start simple. Add power only when needed.
 
 ---
 
+## 💡 ConfigHub Philosophy
+> **ConfigHub is a configuration database with a state machine.** Every change is tracked, queryable, and reversible. It's not just about deployment - it's about understanding your configuration state over time. ConfigHub is ALWAYS the source of truth; Kubernetes is just the execution layer.
+> — Brian Grant, ConfigHub inventor
+
 ## The Core Pattern: Two Scripts Rule Everything
 
 ```bash
@@ -177,16 +181,22 @@ traderx-base/
 ## Stage 5: Find and Fix Problems Everywhere
 
 ```bash
-# Market closed in EU, scale down all high-replica services
-cub unit list --space "*" \
-  --where "Space.Slug LIKE '%prod-eu%' AND Data CONTAINS 'replicas: 5'"
+# Create a REUSABLE filter for high-volume services (save once, use everywhere!)
+cub filter create high-volume-trading Unit \
+  --where-field "Data CONTAINS 'replicas:' AND
+                 Data NOT LIKE '%replicas: 1%' AND
+                 Data NOT LIKE '%replicas: 2%'"
+
+# Now anyone can use this filter without remembering the query!
+cub unit list --filter high-volume-trading --space "*"
 
 # Output:
+# traderx-prod-us/trade-service (replicas: 3)
 # traderx-prod-eu/trade-service (replicas: 5)
 
-# Scale down after market close
+# Scale down EU after market close using the filter
 cub run set-replicas --replicas 2 \
-  --where "Data CONTAINS 'replicas: 5'" \
+  --filter high-volume-trading \
   --space "traderx-prod-eu"
 
 # Or find all services using old image version
@@ -194,7 +204,7 @@ cub unit list --space "*" \
   --where "Data CONTAINS 'image:' AND Data CONTAINS ':v1'"
 ```
 
-✅ **Essence**: SQL queries across regions. Fix problems globally.
+✅ **Essence**: SQL queries across regions. Filters = reusable saved queries. Fix problems globally.
 
 ---
 
@@ -204,22 +214,23 @@ cub unit list --space "*" \
 # New market data format requires updating BOTH services
 # They MUST deploy together or trading breaks!
 
-cub changeset create market-data-v2
+# Changesets coordinate changes across TEAMS and SERVICES
+cub changeset create market-data-v2  # Can have owner, approvers!
 cub unit update reference-data --space traderx-prod-us \
-  --patch '{"image": "reference-data:v2"}'  # New format
+  --patch '{"image": "reference-data:v2"}'  # Data team's change
 cub unit update trade-service --space traderx-prod-us \
-  --patch '{"image": "trade-service:v2"}'   # Compatible version
-cub changeset apply market-data-v2  # Both or neither!
+  --patch '{"image": "trade-service:v2"}'   # Trading team's change
+cub changeset apply market-data-v2  # Both teams ready? Deploy atomically!
 ```
 
 ```
 Changeset: market-data-v2
-├── reference-data (v1 → v2: new format)
-└── trade-service (v1 → v2: reads new format)
-Apply: ✓ Atomic! No broken trades!
+├── reference-data (v1 → v2: owned by data-team)
+└── trade-service (v1 → v2: owned by trading-team)
+Apply: ✓ Atomic! Both teams coordinated!
 ```
 
-✅ **Essence**: Related services update together. No partial failures.
+✅ **Essence**: Changesets coordinate teams AND services. Atomic deployment across boundaries.
 
 ---
 
@@ -233,9 +244,17 @@ Apply: ✓ Atomic! No broken trades!
 cub run set-env-var --env-var CIRCUIT_BREAKER=true \
   --unit trade-service --space traderx-prod-eu
 
+# Check revision history - WHO did WHAT and WHEN?
+cub revision list trade-service --space traderx-prod-eu --limit 3
+# Output:
+# Rev 47: 2024-01-16 09:15 UTC | alice@trading.com | set CIRCUIT_BREAKER=true
+# Rev 46: 2024-01-15 18:00 UTC | system | scale replicas 5→2 (market close)
+# Rev 45: 2024-01-15 08:00 UTC | system | scale replicas 2→5 (market open)
+
 # Asia market opens in 2 hours, need fix NOW (skip US!)
 cub unit update trade-service --space traderx-prod-asia \
-  --merge-unit traderx-prod-eu/trade-service
+  --merge-unit traderx-prod-eu/trade-service \
+  --merge-base=46 --merge-end=47  # Merge ONLY the emergency fix!
 
 # US market closed, backfill later
 cub unit update trade-service --space traderx-prod-us \
@@ -247,9 +266,10 @@ Normal:   dev → staging → us → eu → asia
 Emergency:                 eu → asia  (Fix in 2 hours!)
                            ↓
 Backfill:                  us  (When market closed)
+Audit Trail: ✓ Every change tracked!
 ```
 
-✅ **Essence**: Emergency fix when Asia can't wait for US testing.
+✅ **Essence**: Emergency bypass with full audit trail. WHO changed WHAT and WHEN is always known.
 
 ---
 
@@ -343,13 +363,21 @@ cub unit apply --space "traderx-prod-*" --where "*"
 ## Learn More When You Need It
 
 Start here. When you hit limits, add:
-- **Changesets** for atomic operations
-- **Triggers** for policy enforcement
-- **Approvals** for production gates
+- **Changesets** for atomic operations (shown in Stage 6)
+- **Filters** for reusable queries (shown in Stage 5)
+- **Triggers** for policy enforcement (e.g., require approvals)
+- **Invocations** for reusable function definitions (standardize operations across teams)
 - **Links** for cross-app relationships
 - **Sets** for logical grouping
+- **Cross-Space Inheritance** for platform-wide standards:
+  ```bash
+  cub unit create monitoring --space traderx-prod-us \
+    --upstream-unit platform-base/monitoring-standard
+  ```
 
 But not before you need them. Simplicity first.
+
+Remember: ConfigHub is a configuration database. Every change is tracked, queryable, and reversible.
 
 ---
 
