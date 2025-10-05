@@ -297,19 +297,13 @@ cub unit update --upgrade --patch  # Push algorithm updates
 
 ---
 
-## Comparison with Traditional Tools
-
-**Traditional Tools**:
-- Updating base configurations overwrites customizations
-- Regional updates require editing multiple files
-- Finding configuration issues requires manual search
-- Emergency fixes must follow standard promotion flow
+## ConfigHub Comparison with Traditional Tools
 
 **ConfigHub**:
-- Push-upgrade preserves customizations during base updates
-- WHERE clauses enable bulk operations across regions
-- SQL-like queries locate configurations
-- Lateral promotion bypasses standard flow when needed
+- Updates preserve customizations and don't clobber or surprise
+- Bulk operations and other live ops at scale
+- Queries instead of hunting through config sprawl
+- Lateral promotions instead of chaining dev tools to promote changes 
 
 ---
 
@@ -371,9 +365,26 @@ The patterns above demonstrate core ConfigHub functionality. Additional features
 
 ConfigHub maintains complete change history with rollback capabilities at the unit level.
 
+ConfigHub has an SDK and integrations with tools like Helm.
+
 ---
 
-## Visual Learning Resources
+## What to read
+
+1. Read this README for overview
+2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
+3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
+4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md)
+
+### Visual Progression
+See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for command examples and ASCII before/after diagrams:
+- Stage 1: Hello TraderX
+- Stage 2: Three Environments
+- Stage 3: Three Regions
+- Stage 4: Push-Upgrade
+- Stage 5: Find and Fix
+- Stage 6: Atomic Updates
+- Stage 7: Emergency Bypass
 
 ### Architecture Diagrams
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
@@ -384,25 +395,4 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 - Emergency lateral promotion flow
 - Multi-cluster deployment architecture
 
-### Stage-by-Stage Progression
-See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for visual progression through all 7 stages:
-- Stage 1: Hello TraderX
-- Stage 2: Three Environments
-- Stage 3: Three Regions
-- Stage 4: Push-Upgrade
-- Stage 5: Find and Fix
-- Stage 6: Atomic Updates
-- Stage 7: Emergency Bypass
-
-Each stage includes:
-- ASCII art diagrams showing the structure
-- Before/after visualizations
-- Command examples
-- Key concepts
-- Real-world scenarios
-
-**Recommended learning path**:
-1. Read this README for overview
-2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
-3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
-4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md)
+  
