@@ -19,7 +19,19 @@ echo ""
 case $STAGE in
   1)
     echo "Stage 1: Deploy to single space"
-    cub worker install worker --space traderx --wait || true
+
+    # Create worker and target if they don't exist
+    cub worker create worker --space traderx 2>/dev/null || echo "Worker already exists"
+    cub target create worker "{}" worker --space traderx 2>/dev/null || echo "Target already exists"
+
+    # Install worker to Kubernetes
+    echo "Installing worker to Kubernetes..."
+    cub worker install worker --space traderx --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+
+    # Set unit target to worker
+    cub unit set-target reference-data worker --space traderx || true
+
+    # Apply unit
     cub unit apply reference-data --space traderx
 
     echo -e "${GREEN}✓ Deployed reference-data to traderx${NC}"
@@ -29,7 +41,17 @@ case $STAGE in
 
   2)
     echo "Stage 2: Deploy only production"
-    cub worker install worker --space traderx-prod --wait || true
+
+    # Create worker and target
+    cub worker create worker --space traderx-prod 2>/dev/null || echo "Worker already exists"
+    cub target create worker "{}" worker --space traderx-prod 2>/dev/null || echo "Target already exists"
+
+    # Install worker to Kubernetes
+    echo "Installing worker to Kubernetes..."
+    cub worker install worker --space traderx-prod --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+
+    # Set target and apply
+    cub unit set-target reference-data worker --space traderx-prod || true
     cub unit apply reference-data --space traderx-prod
 
     echo -e "${GREEN}✓ Deployed to traderx-prod${NC}"
@@ -41,7 +63,16 @@ case $STAGE in
 
     for region in us eu asia; do
       echo "  Deploying to traderx-prod-$region..."
-      cub worker install worker-$region --space traderx-prod-$region --wait || true
+
+      # Create worker and target
+      cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
+
+      # Install worker to Kubernetes
+      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Set targets and apply all units
+      cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
       cub unit apply --space traderx-prod-$region --where "*"
     done
 
@@ -59,7 +90,16 @@ case $STAGE in
     # Deploy all regions
     for region in us eu asia; do
       echo "  Deploying to traderx-prod-$region..."
-      cub worker install worker-$region --space traderx-prod-$region --wait || true
+
+      # Create worker and target
+      cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
+
+      # Install worker to Kubernetes
+      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Set targets and apply all units
+      cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
       cub unit apply --space traderx-prod-$region --where "*"
     done
 
@@ -112,14 +152,32 @@ case $STAGE in
     # Deploy dev/staging
     for env in dev staging; do
       echo "  Deploying to traderx-$env..."
-      cub worker install worker-$env --space traderx-$env --wait || true
+
+      # Create worker and target
+      cub worker create worker-$env --space traderx-$env 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$env "{}" worker-$env --space traderx-$env 2>/dev/null || echo "Target already exists"
+
+      # Install worker to Kubernetes
+      cub worker install worker-$env --space traderx-$env --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Set targets and apply all units
+      cub unit set-target worker-$env --space traderx-$env --where "Slug != ''" || true
       cub unit apply --space traderx-$env --where "*"
     done
 
     # Deploy all regions
     for region in us eu asia; do
       echo "  Deploying to traderx-prod-$region..."
-      cub worker install worker-$region --space traderx-prod-$region --wait || true
+
+      # Create worker and target
+      cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
+
+      # Install worker to Kubernetes
+      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Set targets and apply all units
+      cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
       cub unit apply --space traderx-prod-$region --where "*"
     done
 

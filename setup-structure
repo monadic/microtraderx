@@ -20,14 +20,14 @@ case $STAGE in
   1)
     echo "Stage 1: Hello TraderX - Single service, single space"
     cub space create traderx || true
-    cub unit create reference-data --space traderx --data k8s/reference-data.yaml || true
+    cub unit create --space traderx reference-data k8s/reference-data.yaml || true
     echo -e "${GREEN}✓ Created traderx/reference-data${NC}"
     ;;
 
   2)
     echo "Stage 2: Three Environments"
     cub space create traderx || true
-    cub unit create reference-data --space traderx --data k8s/reference-data.yaml || true
+    cub unit create --space traderx reference-data k8s/reference-data.yaml || true
 
     for env in dev staging prod; do
       echo "  Creating traderx-$env..."
@@ -40,8 +40,8 @@ case $STAGE in
   3)
     echo "Stage 3: Three Regions with Custom Scale"
     cub space create traderx-prod || true
-    cub unit create reference-data --space traderx-prod --data k8s/reference-data.yaml || true
-    cub unit create trade-service --space traderx-prod --data k8s/trade-service.yaml || true
+    cub unit create --space traderx-prod reference-data k8s/reference-data.yaml || true
+    cub unit create --space traderx-prod trade-service k8s/trade-service.yaml || true
 
     for region in us eu asia; do
       echo "  Creating traderx-prod-$region..."
@@ -70,8 +70,8 @@ case $STAGE in
 
     # Create base space
     cub space create traderx-base || true
-    cub unit create reference-data --space traderx-base --data k8s/reference-data.yaml || true
-    cub unit create trade-service --space traderx-base --data k8s/trade-service.yaml || true
+    cub unit create --space traderx-base reference-data k8s/reference-data.yaml || true
+    cub unit create --space traderx-base trade-service k8s/trade-service.yaml || true
 
     # Create regions with upstream links
     for region in us eu asia; do
@@ -79,13 +79,13 @@ case $STAGE in
       cub space create traderx-prod-$region || true
 
       # Get base unit IDs for upstream
-      base_ref_id=$(cub unit get reference-data --space traderx-base --output json | jq -r '.id')
-      base_trade_id=$(cub unit get trade-service --space traderx-base --output json | jq -r '.id')
+      base_ref_id=$(cub unit get --space traderx-base --json reference-data | jq -r '.id')
+      base_trade_id=$(cub unit get --space traderx-base --json trade-service | jq -r '.id')
 
-      cub unit create reference-data --space traderx-prod-$region \
-        --upstream-unit $base_ref_id --data k8s/reference-data.yaml || true
-      cub unit create trade-service --space traderx-prod-$region \
-        --upstream-unit $base_trade_id --data k8s/trade-service.yaml || true
+      cub unit create --space traderx-prod-$region reference-data k8s/reference-data.yaml \
+        --upstream-unit $base_ref_id || true
+      cub unit create --space traderx-prod-$region trade-service k8s/trade-service.yaml \
+        --upstream-unit $base_trade_id || true
     done
 
     # Regional customizations (preserved during upgrade!)
@@ -135,33 +135,33 @@ case $STAGE in
 
     # Create base
     cub space create traderx-base || true
-    cub unit create reference-data --space traderx-base --data k8s/reference-data.yaml || true
-    cub unit create trade-service --space traderx-base --data k8s/trade-service.yaml || true
+    cub unit create --space traderx-base reference-data k8s/reference-data.yaml || true
+    cub unit create --space traderx-base trade-service k8s/trade-service.yaml || true
 
     # Create dev/staging
     for env in dev staging; do
       echo "  Creating traderx-$env..."
       cub space create traderx-$env || true
-      base_ref_id=$(cub unit get reference-data --space traderx-base --output json | jq -r '.id' || echo "")
-      base_trade_id=$(cub unit get trade-service --space traderx-base --output json | jq -r '.id' || echo "")
+      base_ref_id=$(cub unit get --space traderx-base --json reference-data | jq -r '.id' || echo "")
+      base_trade_id=$(cub unit get --space traderx-base --json trade-service | jq -r '.id' || echo "")
 
-      cub unit create reference-data --space traderx-$env \
-        --upstream-unit $base_ref_id --data k8s/reference-data.yaml || true
-      cub unit create trade-service --space traderx-$env \
-        --upstream-unit $base_trade_id --data k8s/trade-service.yaml || true
+      cub unit create --space traderx-$env reference-data k8s/reference-data.yaml \
+        --upstream-unit $base_ref_id || true
+      cub unit create --space traderx-$env trade-service k8s/trade-service.yaml \
+        --upstream-unit $base_trade_id || true
     done
 
     # Create regions
     for region in us eu asia; do
       echo "  Creating traderx-prod-$region..."
       cub space create traderx-prod-$region || true
-      base_ref_id=$(cub unit get reference-data --space traderx-base --output json | jq -r '.id' || echo "")
-      base_trade_id=$(cub unit get trade-service --space traderx-base --output json | jq -r '.id' || echo "")
+      base_ref_id=$(cub unit get --space traderx-base --json reference-data | jq -r '.id' || echo "")
+      base_trade_id=$(cub unit get --space traderx-base --json trade-service | jq -r '.id' || echo "")
 
-      cub unit create reference-data --space traderx-prod-$region \
-        --upstream-unit $base_ref_id --data k8s/reference-data.yaml || true
-      cub unit create trade-service --space traderx-prod-$region \
-        --upstream-unit $base_trade_id --data k8s/trade-service.yaml || true
+      cub unit create --space traderx-prod-$region reference-data k8s/reference-data.yaml \
+        --upstream-unit $base_ref_id || true
+      cub unit create --space traderx-prod-$region trade-service k8s/trade-service.yaml \
+        --upstream-unit $base_trade_id || true
     done
 
     # Regional customizations
