@@ -21,7 +21,6 @@ For navigation help: [DOCS-MAP.md](DOCS-MAP.md) organizes documentation by role 
 
 ## ConfigHub Architecture
 > ConfigHub is a configuration database with a state machine. Every change is tracked, queryable, and reversible. ConfigHub maintains the desired state as the source of truth; Kubernetes reflects the executed state.
-> — Brian Grant, ConfigHub inventor
 
 ## Core Implementation Pattern
 
