@@ -1,0 +1,11 @@
+# Ignore macOS files
+.DS_Store
+
+# Ignore vim/editor files
+*.swp
+*.swo
+*~
+
+# Ignore any local test output
+test-output/
+*.log
