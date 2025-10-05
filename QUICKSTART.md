@@ -28,17 +28,15 @@
 
 ## Stage Overview
 
-| Stage | Time | What You Learn |
-|-------|------|----------------|
-| 1 | 2 min | Spaces, Units, Workers |
-| 2 | 1 min | Environments as Spaces |
-| 3 | 2 min | Regional Scale Customization |
-| 4 | 2 min | Push-Upgrade Pattern |
-| 5 | 1 min | Find and Fix (SQL WHERE) |
-| 6 | 1 min | Atomic Changesets |
-| 7 | 1 min | Emergency Bypass |
-
-**Total: 10 minutes**
+| Stage | What You Learn |
+|-------|----------------|
+| 1 | Spaces, Units, Workers |
+| 2 | Environments as Spaces |
+| 3 | Regional Scale Customization |
+| 4 | Push-Upgrade Pattern |
+| 5 | Find and Fix (SQL WHERE) |
+| 6 | Atomic Changesets |
+| 7 | Emergency Bypass |
 
 ## Files Created
 

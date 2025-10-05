@@ -401,9 +401,9 @@ Next    US → base (standard flow)      Base updated for future
 FLOW DIAGRAM:
 ═════════════
 
-Normal:     dev → staging → us → eu → asia  (2-3 hours)
+Normal:     dev → staging → us → eu → asia
 
-Emergency:              ┌──→ asia  (5 minutes!)
+Emergency:              ┌──→ asia  (immediate)
                         │
                         eu ──→ us   (backfill when safe)
                         │

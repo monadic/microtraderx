@@ -1,6 +1,6 @@
 # ConfigHub Tutorial
 
-Demonstrate ConfigHub's core features in stages using a TraderX example app.
+A 7-stage tutorial that demonstrates ConfigHub concepts through building a simplified trading platform with multi-region deployment.
 
 ---
 
@@ -15,17 +15,101 @@ Demonstrate ConfigHub's core features in stages using a TraderX example app.
 
 ---
 
+## Prerequisites
+
+1. ConfigHub CLI: `cub upgrade`
+2. ConfigHub Auth: `cub auth login`
+3. Kubernetes: Local (kind/minikube) or remote cluster
+4. jq: For JSON parsing (optional)
+
+## Quick Start
+
+### Option 1: Run All Stages
+```bash
+./stages/stage1-hello-traderx.sh
+./stages/stage2-three-envs.sh
+./stages/stage3-three-regions.sh
+./stages/stage4-push-upgrade.sh
+./stages/stage5-find-and-fix.sh
+./stages/stage6-atomic-updates.sh
+./stages/stage7-emergency-bypass.sh
+```
+
+### Option 2: Jump to Any Stage
+```bash
+./setup-structure 3    # Setup stage 3
+./deploy 3             # Deploy stage 3
+./test/validate.sh 3   # Validate
+```
+
+### Option 3: Quick Demo
+```bash
+./stages/stage1-hello-traderx.sh
+kubectl get all -n traderx
+```
+
+## Project Structure
+
+```
+microtraderx/
+├── README.md                # This tutorial guide
+├── QUICKSTART.md            # Quick start guide
+├── TESTING.md               # Testing guide
+├── setup-structure          # Main setup script
+├── deploy                   # Main deploy script
+├── k8s/                     # Kubernetes manifests
+│   ├── namespace.yaml
+│   ├── reference-data.yaml
+│   └── trade-service.yaml
+├── stages/                  # Individual stage scripts
+│   ├── stage1-hello-traderx.sh
+│   ├── stage2-three-envs.sh
+│   ├── stage3-three-regions.sh
+│   ├── stage4-push-upgrade.sh
+│   ├── stage5-find-and-fix.sh
+│   ├── stage6-atomic-updates.sh
+│   └── stage7-emergency-bypass.sh
+└── test/
+    └── validate.sh          # Validation script
+```
+
+---
+
 ## ConfigHub Architecture
 > ConfigHub is a configuration database with a state machine. Every change is tracked, queryable, and reversible. ConfigHub maintains the desired state as the source of truth; Kubernetes reflects the executed state.
 
 ## Core Implementation Pattern
 
+ConfigHub projects use two primary scripts:
+
 ```bash
-./setup-structure   # Creates spaces, units, relationships
-./deploy           # Deploys to Kubernetes via Workers
+./setup-structure   # Creates ConfigHub structure (spaces, units, relationships)
+./deploy           # Deploys to Kubernetes (workers + apply)
 ```
 
-These two scripts encapsulate the essential ConfigHub workflow.
+## Tutorial Stages
+
+| Stage | Topic | Key Concept |
+|-------|-------|-------------|
+| 1 | Spaces, Units, Workers | Basic building blocks |
+| 2 | Environments | Spaces as environments |
+| 3 | Regional Scale | Business-driven configuration |
+| 4 | Push-Upgrade | Update base, preserve customizations |
+| 5 | Find and Fix | SQL WHERE clauses |
+| 6 | Atomic Updates | Changesets for related services |
+| 7 | Emergency Bypass | Lateral promotion |
+
+## Example Scenario
+
+The tutorial uses a global trading platform with region-specific scaling:
+
+- US: 3 replicas (NYSE hours, normal volume)
+- EU: 5 replicas (London + Frankfurt, peak trading)
+- Asia: 2 replicas (Tokyo overnight, low volume)
+
+Challenge: Update the trading algorithm globally while preserving regional replica counts.
+
+Solution: ConfigHub's push-upgrade pattern preserves local customizations during base updates.
 
 ---
 
@@ -245,7 +329,7 @@ cub revision list trade-service --space traderx-prod-eu --limit 3
 # Rev 46: 2024-01-15 18:00 UTC | system | scale replicas 5→2 (market close)
 # Rev 45: 2024-01-15 08:00 UTC | system | scale replicas 2→5 (market open)
 
-# Asia market opens in 2 hours, requires fix before opening
+# Asia market opens soon, requires immediate fix
 cub unit update trade-service --space traderx-prod-asia \
   --merge-unit traderx-prod-eu/trade-service \
   --merge-base=46 --merge-end=47  # Merge only the emergency fix
@@ -395,4 +479,31 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 - Emergency lateral promotion flow
 - Multi-cluster deployment architecture
 
-  
+- Stage 7: Emergency Bypass
+
+Each stage includes:
+- ASCII art diagrams showing the structure
+- Before/after visualizations
+- Command examples
+- Key concepts
+- Real-world scenarios
+
+**Recommended learning path**:
+1. Read this README for overview
+2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
+3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
+4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md)
+
+---
+
+## Learning Objectives
+
+After completing this tutorial, you should be able to:
+
+- Create ConfigHub spaces and units
+- Deploy configurations to Kubernetes
+- Manage multiple environments and regions
+- Use push-upgrade to update globally while preserving local changes
+- Query and fix configurations across regions with SQL WHERE clauses
+- Perform atomic multi-service updates
+- Handle emergency scenarios with lateral promotion

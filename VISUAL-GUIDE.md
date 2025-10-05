@@ -17,7 +17,6 @@ Stage-by-stage visual progression showing how the system evolves from a simple d
 
 ## Stage 1: Hello TraderX
 
-**Time**: 2 minutes
 **Concept**: Spaces contain units. Workers deploy them.
 
 ### Commands
@@ -96,7 +95,6 @@ Stage-by-stage visual progression showing how the system evolves from a simple d
 
 ## Stage 2: Three Environments
 
-**Time**: 1 minute
 **Concept**: Spaces are environments. Copy promotes config.
 
 ### Commands
@@ -170,7 +168,6 @@ Commands:
 
 ## Stage 3: Three Regions
 
-**Time**: 2 minutes
 **Concept**: Regional scale customization based on business logic.
 
 ### Commands
@@ -265,7 +262,6 @@ Business Logic:
 
 ## Stage 4: Push-Upgrade
 
-**Time**: 2 minutes
 **Concept**: Update base → flows everywhere, keeps regional scale.
 
 ### Commands
@@ -418,7 +414,6 @@ ConfigHub Needs:
 
 ## Stage 5: Find and Fix
 
-**Time**: 1 minute
 **Concept**: SQL-like WHERE clauses find and fix problems globally.
 
 ### Commands
@@ -545,7 +540,6 @@ cub unit list --space "*" \
 
 ## Stage 6: Atomic Updates
 
-**Time**: 1 minute
 **Concept**: Changesets ensure related services update together.
 
 ### Commands
@@ -596,14 +590,14 @@ Result: BROKEN TRADES! ✗
   • trade-service can't parse it
   • Trades fail!
 
-Step 2: Update trade-service (5 minutes later)
+Step 2: Update trade-service separately
 ┌──────────────┐     ┌──────────────┐
 │ ref-data: v2 │     │ trade-svc:v2 │
 │ (new format) │ ──▶ │ (new format) │
 └──────────────┘     └──────────────┘
      ✓ Works           ✓ Fixed
 
-Result: 5 minutes of broken trades! ✗✗✗
+Result: Services out of sync, trades broken!
 
 
 WITH Changeset (SAFE!):
@@ -654,7 +648,7 @@ T+300s: Update trade-service (kubectl apply)
         ✓ Deployed
 T+301s: ✓ Trades working again
 
-Downtime: 5 minutes of broken trades! ✗✗✗
+Downtime: Services out of sync, trades broken!
 
 
 ConfigHub Changeset:
@@ -686,7 +680,6 @@ Downtime: ZERO! ✓✓✓
 
 ## Stage 7: Emergency Bypass
 
-**Time**: 1 minute
 **Concept**: Lateral promotion for emergency fixes.
 
 ### Commands
@@ -835,7 +828,7 @@ Next Day    ✓ Update base (root cause fix)
             │
             └─ All regions safe, base fixed ✓✓✓
 
-Total emergency response time: 10 minutes
+Emergency response: Immediate lateral promotion
 Total regions protected: 3/3
 Trading losses prevented: Millions! ✓
 ```
@@ -872,7 +865,7 @@ Emergency Flow (Lateral Promotion):
  EMERGENCY!   SAFE!
     ✓          ✓
 
-Time to protect Asia: 10 minutes ✓✓✓
+Asia protected via lateral promotion
 ```
 
 ### What You Created

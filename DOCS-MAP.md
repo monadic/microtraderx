@@ -8,35 +8,34 @@ Quick reference guide to all documentation files.
 
 ```
 microtraderx/
-├── README.md              ⭐ START HERE - The essence (10 min)
-├── VISUAL-GUIDE.md        📈 Stage-by-stage progression (15 min)
-├── ARCHITECTURE.md        📊 System architecture diagrams (20 min)
-├── QUICKSTART.md          🚀 Get started quickly (5 min)
-├── TESTING.md             🧪 Testing and validation (10 min)
-├── TEST_REPORT.md         📋 Test results and coverage
-└── PROJECT_SUMMARY.md     📝 Project overview
+├── README.md              ⭐ START HERE - The essence
+├── VISUAL-GUIDE.md        📈 Stage-by-stage progression
+├── ARCHITECTURE.md        📊 System architecture diagrams
+├── QUICKSTART.md          🚀 Get started quickly
+├── TESTING.md             🧪 Testing and validation
+└── TEST_REPORT.md         📋 Test results and coverage
 ```
 
 ---
 
 ## Reading Path by Persona
 
-### 🎓 New Learner (Total: ~45 minutes)
+### 🎓 New Learner
 
 **Goal**: Understand ConfigHub concepts and see them in action
 
-1. **README.md** (10 min) - Get the essence
+1. **README.md** - Get the essence
    - Core pattern: setup-structure + deploy
-   - See what's possible in 10 minutes
+   - See what's possible quickly
    - Understand the value proposition
 
-2. **VISUAL-GUIDE.md** (15 min) - See the progression
+2. **VISUAL-GUIDE.md** - See the progression
    - Stage 1: Hello TraderX (basic deployment)
    - Stage 2-3: Environments and regions
    - Stage 4: Push-upgrade magic
    - Stage 5-7: Advanced patterns
 
-3. **ARCHITECTURE.md** (20 min) - Deep dive
+3. **ARCHITECTURE.md** - Deep dive
    - Complete system architecture
    - Inheritance and push-upgrade internals
    - Multi-cluster deployment
@@ -49,21 +48,21 @@ microtraderx/
 
 ---
 
-### 👨‍💻 Hands-On Developer (Total: ~25 minutes)
+### 👨‍💻 Hands-On Developer
 
 **Goal**: Get it running and understand how it works
 
-1. **QUICKSTART.md** (5 min) - Get started
+1. **QUICKSTART.md** - Get started
    - Prerequisites
    - Run all stages or jump to any stage
    - Basic troubleshooting
 
-2. **README.md** (10 min) - Understand the patterns
+2. **README.md** - Understand the patterns
    - Two-script pattern
    - Push-upgrade
    - Regional customization
 
-3. **VISUAL-GUIDE.md** (10 min) - See specific stages
+3. **VISUAL-GUIDE.md** - See specific stages
    - Jump to stages you care about
    - See before/after diagrams
    - Understand the commands
@@ -75,18 +74,18 @@ microtraderx/
 
 ---
 
-### 🏗️ Architect (Total: ~30 minutes)
+### 🏗️ Architect
 
 **Goal**: Understand the architecture and design decisions
 
-1. **ARCHITECTURE.md** (20 min) - Study the design
+1. **ARCHITECTURE.md** - Study the design
    - System architecture
    - 3-region topology
    - Inheritance patterns
    - Push-upgrade mechanics
    - Multi-cluster deployment
 
-2. **README.md** (10 min) - See the patterns in action
+2. **README.md** - See the patterns in action
    - Complete system example
    - Real-world use cases
    - Business logic in config
@@ -98,21 +97,21 @@ microtraderx/
 
 ---
 
-### 🧪 QA/Tester (Total: ~20 minutes)
+### 🧪 QA/Tester
 
 **Goal**: Validate functionality and understand test coverage
 
-1. **TESTING.md** (10 min) - Testing approach
+1. **TESTING.md** - Testing approach
    - Validation scripts
    - Test cases
    - Expected outcomes
 
-2. **TEST_REPORT.md** (5 min) - Test results
+2. **TEST_REPORT.md** - Test results
    - What was tested
    - Coverage
    - Known issues
 
-3. **QUICKSTART.md** (5 min) - Run tests yourself
+3. **QUICKSTART.md** - Run tests yourself
    - Setup prerequisites
    - Run validation
    - Troubleshoot failures
@@ -158,7 +157,7 @@ microtraderx/
 
 ## Quick Reference: Which Doc Has What?
 
-### README.md (10 min)
+### README.md
 **Best for**: Quick overview and understanding the essence
 - ✓ All 7 stages (overview)
 - ✓ Core patterns
@@ -167,7 +166,7 @@ microtraderx/
 - ✗ Detailed diagrams
 - ✗ Step-by-step progression
 
-### VISUAL-GUIDE.md (15 min)
+### VISUAL-GUIDE.md
 **Best for**: Seeing the progression with diagrams
 - ✓ All 7 stages (detailed)
 - ✓ ASCII art diagrams
@@ -176,7 +175,7 @@ microtraderx/
 - ✓ Use case scenarios
 - ✗ Architecture deep-dive
 
-### ARCHITECTURE.md (20 min)
+### ARCHITECTURE.md
 **Best for**: Understanding the architecture and internals
 - ✓ System architecture
 - ✓ Inheritance mechanics
@@ -185,7 +184,7 @@ microtraderx/
 - ✓ Emergency patterns
 - ✗ Stage-by-stage progression
 
-### QUICKSTART.md (5 min)
+### QUICKSTART.md
 **Best for**: Getting started quickly
 - ✓ Prerequisites
 - ✓ How to run
@@ -194,7 +193,7 @@ microtraderx/
 - ✗ Concept explanations
 - ✗ Detailed diagrams
 
-### TESTING.md (10 min)
+### TESTING.md
 **Best for**: Validation and testing
 - ✓ Test approach
 - ✓ Validation scripts
@@ -254,40 +253,39 @@ microtraderx/
 
 ## Recommended Learning Sequences
 
-### 30-Minute Crash Course
-1. README.md (10 min) - Get the essence
-2. VISUAL-GUIDE.md (15 min) - See stages 1, 3, 4, 7
-3. QUICKSTART.md (5 min) - Run stage 4
+### Quick Introduction
+1. README.md - Get the essence
+2. VISUAL-GUIDE.md - See stages 1, 3, 4, 7
+3. QUICKSTART.md - Run stage 4
 
-### 1-Hour Deep Dive
-1. README.md (10 min) - Overview
-2. VISUAL-GUIDE.md (20 min) - All stages
-3. ARCHITECTURE.md (20 min) - Architecture
-4. QUICKSTART.md (10 min) - Hands-on
+### Comprehensive Understanding
+1. README.md - Overview
+2. VISUAL-GUIDE.md - All stages
+3. ARCHITECTURE.md - Architecture
+4. QUICKSTART.md - Hands-on
 
-### 2-Hour Mastery
-1. README.md (15 min) - Study all stages
-2. VISUAL-GUIDE.md (30 min) - All stages with diagrams
-3. ARCHITECTURE.md (30 min) - Complete architecture
-4. QUICKSTART.md (15 min) - Run all stages
-5. TESTING.md (15 min) - Validate
-6. Experiment (15 min) - Modify and test
+### Complete Mastery
+1. README.md - Study all stages
+2. VISUAL-GUIDE.md - All stages with diagrams
+3. ARCHITECTURE.md - Complete architecture
+4. QUICKSTART.md - Run all stages
+5. TESTING.md - Validate
+6. Experiment - Modify and test
 
 ---
 
-## File Sizes (for time estimation)
+## File Sizes
 
-| File | Size | Reading Time |
-|------|------|--------------|
-| README.md | 11 KB | 10 minutes |
-| VISUAL-GUIDE.md | 48 KB | 15-20 minutes |
-| ARCHITECTURE.md | 35 KB | 20-25 minutes |
-| QUICKSTART.md | 4 KB | 5 minutes |
-| TESTING.md | 8 KB | 10 minutes |
-| TEST_REPORT.md | 13 KB | 5 minutes |
-| PROJECT_SUMMARY.md | 7 KB | 5 minutes |
+| File | Size |
+|------|------|
+| README.md | 11 KB |
+| VISUAL-GUIDE.md | 48 KB |
+| ARCHITECTURE.md | 35 KB |
+| QUICKSTART.md | 4 KB |
+| TESTING.md | 8 KB |
+| TEST_REPORT.md | 13 KB |
 
-**Total documentation**: ~126 KB, ~70-80 minutes to read everything
+**Total documentation**: ~119 KB
 
 ---
 
@@ -316,7 +314,7 @@ When updating docs, maintain this structure:
 | What's lateral promotion? | VISUAL-GUIDE.md Stage 7 |
 | How do I test it? | TESTING.md |
 | What was tested? | TEST_REPORT.md |
-| What's the project about? | PROJECT_SUMMARY.md |
+| What's the project about? | README.md |
 
 ---
 

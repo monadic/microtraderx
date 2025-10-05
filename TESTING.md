@@ -1,6 +1,6 @@
 # MicroTraderX Testing Guide
 
-## Quick Test (1 minute)
+## Quick Test
 
 ```bash
 # Test Stage 1 (simplest)
@@ -260,7 +260,7 @@ time ./stages/stage2-three-envs.sh
 time ./stages/stage3-three-regions.sh
 # ... etc
 
-# Expected: Total < 10 minutes
+# Measure execution time for each stage
 ```
 
 ### Measure Push-Upgrade Speed
@@ -311,4 +311,3 @@ jobs:
 - ✅ Push-upgrade preserves local customizations
 - ✅ Find and fix queries return correct results
 - ✅ Upstream relationships correctly established
-- ✅ Total time < 10 minutes

@@ -54,7 +54,7 @@ drift-detector/              # Yet another space
 
 ---
 
-## Stage 8: Add Cost Optimization (5 min)
+## Stage 8: Add Cost Optimization
 
 ### Step 1: Make TraderX Discoverable
 
@@ -127,7 +127,7 @@ cub unit create optimization-2024-01-15 --space cost-optimizer \
 
 ---
 
-## Stage 9: Add Security Scanner (3 min)
+## Stage 9: Add Security Scanner
 
 ### Another Independent App
 
@@ -150,7 +150,7 @@ cub unit create vuln-report-2024-01 --space security-scanner \
 
 ---
 
-## Stage 10: Add Drift Detector (3 min)
+## Stage 10: Add Drift Detector
 
 ### Yet Another Independent App
 
