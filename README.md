@@ -4,6 +4,20 @@ Start simple. Add power only when needed.
 
 ---
 
+## 📚 Documentation
+
+- **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - Stage-by-stage visual progression with ASCII diagrams
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
+- **[TESTING.md](TESTING.md)** - Testing guide and validation
+- **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and reading paths by persona
+
+**New to ConfigHub?** Start with [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see the progression through all 7 stages with clear diagrams.
+
+**Not sure where to start?** See [DOCS-MAP.md](DOCS-MAP.md) for recommended reading paths based on your role (learner, developer, architect, tester).
+
+---
+
 ## The Core Pattern: Two Scripts Rule Everything
 
 ```bash
@@ -335,3 +349,39 @@ Start here. When you hit limits, add:
 - **Sets** for logical grouping
 
 But not before you need them. Simplicity first.
+
+---
+
+## Visual Learning Resources
+
+### 📊 Architecture Diagrams
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams showing:
+- Complete system architecture (ConfigHub → Kubernetes)
+- 3-region deployment topology (US, EU, Asia)
+- Inheritance flow and upstream/downstream relationships
+- Push-upgrade pattern (before/after)
+- Emergency lateral promotion flow
+- Multi-cluster deployment architecture
+
+### 📈 Stage-by-Stage Progression
+See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for visual progression through all 7 stages:
+- Stage 1: Hello TraderX (spaces + units + workers)
+- Stage 2: Three Environments (dev → staging → prod)
+- Stage 3: Three Regions (regional scaling: 3, 5, 2 replicas)
+- Stage 4: Push-Upgrade (inherit + propagate + preserve)
+- Stage 5: Find and Fix (SQL-like WHERE clauses)
+- Stage 6: Atomic Updates (changesets for consistency)
+- Stage 7: Emergency Bypass (lateral promotion for critical fixes)
+
+Each stage includes:
+- ASCII art diagrams showing the structure
+- Before/after visualizations
+- Command examples
+- Key learning points
+- Real-world scenarios
+
+**Recommended learning path**:
+1. Read this README for the essence (10 minutes)
+2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage (15 minutes)
+3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for deep dive (20 minutes)
+4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md) (10 minutes)
