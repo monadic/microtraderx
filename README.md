@@ -206,7 +206,7 @@ traderx-prod-asia/
 └── trade-service (replicas: 2) ✓  # Overnight trading
 ```
 
-**Key concept**: Regional customization based on actual business requirements.
+**Key concept**: Each region is a variant - a customized copy of the same base configuration. Regional units will later inherit from base using `--upstream-unit`.
 
 ---
 
@@ -222,38 +222,46 @@ cub unit create trade-service --space traderx-base \
 
 for region in us eu asia; do
   cub unit create trade-service --space traderx-prod-$region \
-    --upstream-unit traderx-base/trade-service  # Magic link!
+    --upstream-unit traderx-base/trade-service  # Creates variants
 done
 
 # Regions already customized (from Stage 3)
 # EU has 5 replicas for peak trading
 # Asia has 2 for overnight
 
+# Visualize variant hierarchy
+cub unit tree --node=space trade-service --space "*"
+
 # Critical update: New trade algorithm v2
 cub unit update trade-service --space traderx-base \
   --data trade-service-v2.yaml  # New algorithm!
+
+# Check which variants need upgrading
+cub unit tree --node=space trade-service --space "*" \
+  --columns Space.Slug,UpgradeNeeded
 
 # Push upgrade (preserves regional replicas!)
 cub unit update --upgrade --patch --space "traderx-prod-*"
 ```
 
+Tree output shows variant hierarchy:
 ```
-Before upgrade:
-traderx-base/
-└── trade-service (v1: old algorithm)
-    ├── prod-us/trade-service (v1, replicas: 3)
-    ├── prod-eu/trade-service (v1, replicas: 5)
-    └── prod-asia/trade-service (v1, replicas: 2)
-
-After upgrade:
-traderx-base/
-└── trade-service (v2: NEW algorithm)
-    ├── prod-us/trade-service (v2, replicas: 3) ✓
-    ├── prod-eu/trade-service (v2, replicas: 5) ✓  # Kept 5!
-    └── prod-asia/trade-service (v2, replicas: 2) ✓  # Kept 2!
+NODE                  UNIT            UPGRADE-NEEDED
+└── traderx-base      trade-service
+    ├── traderx-prod-us    trade-service   Yes
+    ├── traderx-prod-eu    trade-service   Yes
+    └── traderx-prod-asia  trade-service   Yes
 ```
 
-**Key concept**: Inheritance with merge capabilities. Base updates propagate while local overrides persist.
+After upgrade, variants preserve customizations:
+```
+traderx-base/trade-service (v2: NEW algorithm)
+├── prod-us/trade-service (v2, replicas: 3) ✓
+├── prod-eu/trade-service (v2, replicas: 5) ✓  # Kept 5!
+└── prod-asia/trade-service (v2, replicas: 2) ✓  # Kept 2!
+```
+
+**Key concept**: Variants inherit from base via `--upstream-unit`. Upgrade propagates base changes while preserving variant customizations.
 
 ---
 
@@ -352,31 +360,37 @@ Backfill:                  us  (After market close)
 
 ## Complete System Structure
 
+Variant hierarchy (visualize with `cub unit tree`):
 ```
-Structure (setup-structure):
-traderx-base/                  # Shared configs
-├── reference-data-base       # Market data config
-├── trade-service-base        # Trading engine config
-└── web-gui-base             # UI config
+NODE                  UNIT            SPACE
+└── traderx-base      trade-service   traderx-base
+    ├── traderx-prod-us    trade-service   traderx-prod-us    (3 replicas)
+    ├── traderx-prod-eu    trade-service   traderx-prod-eu    (5 replicas)
+    └── traderx-prod-asia  trade-service   traderx-prod-asia  (2 replicas)
+```
 
-traderx-dev/                  # Development
+Space structure:
+```
+traderx-base/                  # Base configurations
+├── reference-data            # Market data
+├── trade-service             # Trading engine
+└── web-gui                   # UI
+
+traderx-prod-us/              # US variants
 ├── reference-data (→base)
-├── trade-service (→base)
+├── trade-service (→base, replicas: 3)
 └── web-gui (→base)
 
-traderx-prod-us/              # US production
-├── trade-service (replicas: 3)  # NYSE volume
+traderx-prod-eu/              # EU variants
+├── trade-service (→base, replicas: 5)
 
-traderx-prod-eu/              # EU production
-├── trade-service (replicas: 5)  # Peak trading
+traderx-prod-asia/            # Asia variants
+├── trade-service (→base, replicas: 2)
 
-traderx-prod-asia/            # Asia production
-├── trade-service (replicas: 2)  # Overnight
-
-Operations (deploy):
-cub worker install           # One per cluster
-cub unit apply              # Deploy everything
-cub unit update --upgrade --patch  # Push algorithm updates
+Operations:
+cub unit tree --node=space --space "*"        # Visualize hierarchy
+cub unit update --upgrade --patch --space "*" # Upgrade all variants
+cub unit apply --space "*"                    # Deploy all
 ```
 
 ---
