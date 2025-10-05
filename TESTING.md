@@ -1,0 +1,314 @@
+# MicroTraderX Testing Guide
+
+## Quick Test (1 minute)
+
+```bash
+# Test Stage 1 (simplest)
+./stages/stage1-hello-traderx.sh
+
+# Verify
+./test/validate.sh 1
+
+# Check Kubernetes
+kubectl get all -n traderx
+```
+
+## Full Test (all stages)
+
+### 1. Test Stage 3 (Regional Scale)
+```bash
+# Setup and deploy
+./stages/stage3-three-regions.sh
+
+# Validate structure
+./test/validate.sh 3
+
+# Verify replica counts
+kubectl get deploy trade-service -n traderx-prod-us -o jsonpath='{.spec.replicas}'    # Should be 3
+kubectl get deploy trade-service -n traderx-prod-eu -o jsonpath='{.spec.replicas}'    # Should be 5
+kubectl get deploy trade-service -n traderx-prod-asia -o jsonpath='{.spec.replicas}'  # Should be 2
+```
+
+### 2. Test Stage 4 (Push-Upgrade)
+```bash
+# Setup with inheritance
+./stages/stage4-push-upgrade.sh
+
+# Update base algorithm
+cub unit update trade-service --space traderx-base \
+  --patch '{"spec":{"template":{"spec":{"containers":[{"name":"trade-service","env":[{"name":"TRADING_ALGORITHM","value":"v2"}]}]}}}}'
+
+# Push to all regions (preserves replicas!)
+cub unit update --upgrade --patch --space 'traderx-prod-*'
+
+# Verify: Algorithm updated, replicas preserved
+for region in us eu asia; do
+  echo "Region: $region"
+  cub unit get trade-service --space traderx-prod-$region --output json | jq '.data.spec.template.spec.containers[0].env[] | select(.name=="TRADING_ALGORITHM")'
+  cub unit get trade-service --space traderx-prod-$region --output json | jq '.data.spec.replicas'
+done
+```
+
+### 3. Test Stage 5 (Find and Fix)
+```bash
+./stages/stage5-find-and-fix.sh
+
+# Find high-replica services
+cub unit list --space '*' --where "Data CONTAINS 'replicas: 5'" --output json | jq '.[] | {space: .space, name: .name, replicas: .data.spec.replicas}'
+
+# Scale down EU after hours
+cub run set-replicas --replicas 2 --space traderx-prod-eu --where "spec.replicas > 2"
+
+# Verify
+kubectl get deploy trade-service -n traderx-prod-eu -o jsonpath='{.spec.replicas}'  # Should be 2 now
+```
+
+## Manual Testing Scenarios
+
+### Scenario 1: Emergency Bug Fix
+```bash
+# EU discovers critical bug at market open
+# Need to fix Asia immediately (can't wait for US testing)
+
+# 1. Apply emergency fix in EU
+cub run set-env-var --env-var CIRCUIT_BREAKER=true \
+  --unit trade-service --space traderx-prod-eu
+
+# 2. Lateral promotion to Asia (bypass US!)
+cub unit update trade-service --space traderx-prod-asia \
+  --merge-unit traderx-prod-eu/trade-service
+
+# 3. Verify Asia has the fix
+cub unit get trade-service --space traderx-prod-asia --output json | \
+  jq '.data.spec.template.spec.containers[0].env[] | select(.name=="CIRCUIT_BREAKER")'
+
+# 4. Backfill US later when market closed
+cub unit update trade-service --space traderx-prod-us \
+  --merge-unit traderx-prod-eu/trade-service
+```
+
+### Scenario 2: Atomic Update (Breaking Change)
+```bash
+# New market data format requires BOTH services to update together
+# If only one updates, trading breaks!
+
+# 1. Create changeset
+cub changeset create market-data-v2
+
+# 2. Add both updates
+cub unit update reference-data --space traderx-prod-us \
+  --patch '{"spec":{"template":{"spec":{"containers":[{"name":"reference-data","image":"traderx/reference-data:v2"}]}}}}'
+
+cub unit update trade-service --space traderx-prod-us \
+  --patch '{"spec":{"template":{"spec":{"containers":[{"name":"trade-service","image":"traderx/trade-service:v2"}]}}}}'
+
+# 3. Apply atomically (both or neither!)
+cub changeset apply market-data-v2
+
+# 4. Verify both updated
+kubectl get deploy reference-data -n traderx-prod-us -o jsonpath='{.spec.template.spec.containers[0].image}'
+kubectl get deploy trade-service -n traderx-prod-us -o jsonpath='{.spec.template.spec.containers[0].image}'
+```
+
+## Automated Test Suite
+
+### Create test-all.sh
+```bash
+#!/bin/bash
+set -e
+
+echo "🧪 Running MicroTraderX Test Suite"
+echo "==================================="
+
+# Test each stage
+for stage in 1 2 3 4 7; do
+  echo ""
+  echo "Testing Stage $stage..."
+
+  # Setup
+  ./setup-structure $stage
+
+  # Validate
+  ./test/validate.sh $stage
+
+  echo "✅ Stage $stage passed"
+done
+
+echo ""
+echo "🎉 All tests passed!"
+```
+
+### Run full test
+```bash
+chmod +x test-all.sh
+./test-all.sh
+```
+
+## Expected Results
+
+### ConfigHub Structure
+```bash
+# List all spaces
+cub space list | grep traderx
+
+# Expected output:
+# traderx-base
+# traderx-dev
+# traderx-staging
+# traderx-prod-us
+# traderx-prod-eu
+# traderx-prod-asia
+```
+
+### Kubernetes Deployments
+```bash
+# List all deployments
+kubectl get deployments -A | grep traderx
+
+# Expected for Stage 7:
+# traderx-dev         reference-data   1/1     1            1           5m
+# traderx-dev         trade-service    1/1     1            1           5m
+# traderx-staging     reference-data   1/1     1            1           5m
+# traderx-staging     trade-service    1/1     1            1           5m
+# traderx-prod-us     reference-data   1/1     1            1           5m
+# traderx-prod-us     trade-service    3/3     3            3           5m
+# traderx-prod-eu     reference-data   1/1     1            1           5m
+# traderx-prod-eu     trade-service    5/5     5            5           5m
+# traderx-prod-asia   reference-data   1/1     1            1           5m
+# traderx-prod-asia   trade-service    2/2     2            2           5m
+```
+
+### Upstream Relationships
+```bash
+# Check inheritance
+cub unit get trade-service --space traderx-prod-us --output json | jq '.upstream_unit_id'
+cub unit get trade-service --space traderx-prod-eu --output json | jq '.upstream_unit_id'
+cub unit get trade-service --space traderx-prod-asia --output json | jq '.upstream_unit_id'
+
+# All should point to traderx-base/trade-service
+```
+
+## Troubleshooting
+
+### Issue: Workers not installing
+```bash
+# Check worker status
+cub worker list
+
+# Reinstall if needed
+cub worker install worker --space traderx-prod-us --wait
+```
+
+### Issue: Units not deploying
+```bash
+# Check unit status
+cub unit get trade-service --space traderx-prod-us --output json | jq '.status'
+
+# Reapply
+cub unit apply trade-service --space traderx-prod-us
+```
+
+### Issue: Replica counts wrong
+```bash
+# Check ConfigHub config
+cub unit get trade-service --space traderx-prod-eu --output json | jq '.data.spec.replicas'
+
+# Check Kubernetes
+kubectl get deploy trade-service -n traderx-prod-eu -o jsonpath='{.spec.replicas}'
+
+# If mismatch, reapply
+cub unit apply trade-service --space traderx-prod-eu
+```
+
+### Issue: Push-upgrade not working
+```bash
+# Verify upstream link
+cub unit get trade-service --space traderx-prod-us --output json | jq '.upstream_unit_id'
+
+# Should have a value like "550e8400-e29b-41d4-a716-446655440000"
+# If null, recreate with --upstream-unit flag
+```
+
+## Cleanup After Testing
+
+```bash
+# Delete all ConfigHub spaces
+cub space delete traderx-base
+for env in dev staging; do
+  cub space delete traderx-$env
+done
+for region in us eu asia; do
+  cub space delete traderx-prod-$region
+done
+
+# Delete Kubernetes resources
+kubectl delete namespace traderx-dev traderx-staging \
+  traderx-prod-us traderx-prod-eu traderx-prod-asia
+
+# Verify cleanup
+cub space list | grep traderx  # Should be empty
+kubectl get ns | grep traderx   # Should be empty
+```
+
+## Performance Testing
+
+### Measure Stage Execution Time
+```bash
+# Time each stage
+time ./stages/stage1-hello-traderx.sh
+time ./stages/stage2-three-envs.sh
+time ./stages/stage3-three-regions.sh
+# ... etc
+
+# Expected: Total < 10 minutes
+```
+
+### Measure Push-Upgrade Speed
+```bash
+# Update base
+time cub unit update trade-service --space traderx-base \
+  --patch '{"spec":{"replicas":1}}'
+
+# Push to 3 regions
+time cub unit update --upgrade --patch --space 'traderx-prod-*'
+
+# Expected: < 5 seconds for 3 regions
+```
+
+## CI/CD Integration
+
+### GitHub Actions Example
+```yaml
+name: Test MicroTraderX
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup ConfigHub
+        run: |
+          curl -sSL https://confighub.com/install.sh | bash
+          cub auth login --token ${{ secrets.CUB_TOKEN }}
+
+      - name: Setup Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          ./kind create cluster
+
+      - name: Run Tests
+        run: |
+          ./test-all.sh
+```
+
+## Success Criteria
+
+- ✅ All 7 stages complete without errors
+- ✅ Replica counts match (US:3, EU:5, Asia:2)
+- ✅ Push-upgrade preserves local customizations
+- ✅ Find and fix queries return correct results
+- ✅ Upstream relationships correctly established
+- ✅ Total time < 10 minutes
