@@ -73,19 +73,23 @@ case $STAGE in
     cub unit create --space traderx-base reference-data k8s/reference-data.yaml || true
     cub unit create --space traderx-base trade-service k8s/trade-service.yaml || true
 
-    # Create regions with upstream links
+    # Create regions with upstream links (canonical pattern)
     for region in us eu asia; do
       echo "  Creating traderx-prod-$region with inheritance..."
       cub space create traderx-prod-$region || true
 
-      # Get base unit IDs for upstream
-      base_ref_id=$(cub unit get --space traderx-base --json reference-data | jq -r '.id')
-      base_trade_id=$(cub unit get --space traderx-base --json trade-service | jq -r '.id')
+      # Use space/slug notation (not unit IDs) - canonical pattern from acmetodo
+      cub unit create reference-data \
+        --space traderx-prod-$region \
+        --upstream-space traderx-base \
+        --upstream-unit reference-data \
+        --data k8s/reference-data.yaml || true
 
-      cub unit create --space traderx-prod-$region reference-data k8s/reference-data.yaml \
-        --upstream-unit $base_ref_id || true
-      cub unit create --space traderx-prod-$region trade-service k8s/trade-service.yaml \
-        --upstream-unit $base_trade_id || true
+      cub unit create trade-service \
+        --space traderx-prod-$region \
+        --upstream-space traderx-base \
+        --upstream-unit trade-service \
+        --data k8s/trade-service.yaml || true
     done
 
     # Regional customizations (preserved during upgrade!)
@@ -138,30 +142,42 @@ case $STAGE in
     cub unit create --space traderx-base reference-data k8s/reference-data.yaml || true
     cub unit create --space traderx-base trade-service k8s/trade-service.yaml || true
 
-    # Create dev/staging
+    # Create dev/staging (canonical pattern)
     for env in dev staging; do
       echo "  Creating traderx-$env..."
       cub space create traderx-$env || true
-      base_ref_id=$(cub unit get --space traderx-base --json reference-data | jq -r '.id' || echo "")
-      base_trade_id=$(cub unit get --space traderx-base --json trade-service | jq -r '.id' || echo "")
 
-      cub unit create --space traderx-$env reference-data k8s/reference-data.yaml \
-        --upstream-unit $base_ref_id || true
-      cub unit create --space traderx-$env trade-service k8s/trade-service.yaml \
-        --upstream-unit $base_trade_id || true
+      # Use space/slug notation (not unit IDs) - canonical pattern from acmetodo
+      cub unit create reference-data \
+        --space traderx-$env \
+        --upstream-space traderx-base \
+        --upstream-unit reference-data \
+        --data k8s/reference-data.yaml || true
+
+      cub unit create trade-service \
+        --space traderx-$env \
+        --upstream-space traderx-base \
+        --upstream-unit trade-service \
+        --data k8s/trade-service.yaml || true
     done
 
-    # Create regions
+    # Create regions (canonical pattern)
     for region in us eu asia; do
       echo "  Creating traderx-prod-$region..."
       cub space create traderx-prod-$region || true
-      base_ref_id=$(cub unit get --space traderx-base --json reference-data | jq -r '.id' || echo "")
-      base_trade_id=$(cub unit get --space traderx-base --json trade-service | jq -r '.id' || echo "")
 
-      cub unit create --space traderx-prod-$region reference-data k8s/reference-data.yaml \
-        --upstream-unit $base_ref_id || true
-      cub unit create --space traderx-prod-$region trade-service k8s/trade-service.yaml \
-        --upstream-unit $base_trade_id || true
+      # Use space/slug notation (not unit IDs) - canonical pattern from acmetodo
+      cub unit create reference-data \
+        --space traderx-prod-$region \
+        --upstream-space traderx-base \
+        --upstream-unit reference-data \
+        --data k8s/reference-data.yaml || true
+
+      cub unit create trade-service \
+        --space traderx-prod-$region \
+        --upstream-space traderx-base \
+        --upstream-unit trade-service \
+        --data k8s/trade-service.yaml || true
     done
 
     # Regional customizations

@@ -1,6 +1,24 @@
-# ConfigHub Tutorial
+# ConfigHub Tutorial - MicroTraderX
 
-A 7-stage tutorial that demonstrates ConfigHub concepts through building a simplified trading platform with multi-region deployment.
+A 7-stage progressive tutorial that teaches ConfigHub fundamentals through building a simplified trading platform with multi-region deployment.
+
+## 📚 Tutorial vs Production
+
+**MicroTraderX (This Tutorial)** - Learn ConfigHub Basics
+- 📖 Progressive learning (7 stages)
+- 🎯 Simple examples (1-2 services)
+- 🔧 Core patterns only (spaces, units, push-upgrade)
+- 🎓 Educational focus with clear explanations
+- ⏱️ Complete in 30-60 minutes
+
+**[TraderX](https://github.com/monadic/traderx)** - Production Patterns
+- 🏢 Full 9-service FINOS application
+- 🚀 Advanced ConfigHub features (Links, Filters, Bulk Ops)
+- 🔗 Complex dependency management
+- 📊 Production-ready monitoring and validation
+- 🎯 Real-world deployment scenarios
+
+**Learning Path**: Start with MicroTraderX to understand ConfigHub basics, then explore TraderX for production-grade patterns.
 
 ---
 
@@ -496,25 +514,69 @@ cub unit apply --space "traderx-prod-*" --where "*"
 
 ---
 
-## Additional ConfigHub Features
+## Advanced ConfigHub Features (Not Covered)
 
-The patterns above demonstrate core ConfigHub functionality. Additional features include:
+This tutorial covers ConfigHub basics. For production-grade features, see the full [TraderX implementation](https://github.com/monadic/traderx) or [acmetodo example](https://docs.confighub.com/howto/acmetodo/).
 
+### Features Demonstrated in This Tutorial ✅
 - **Changesets** - Atomic operations across multiple units (Stage 6)
 - **Filters** - Reusable query definitions (Stage 5)
-- **Triggers** - Policy enforcement and validation rules
-- **Invocations** - Reusable function definitions for standardized operations
-- **Links** - Define relationships between units
-- **Sets** - Logical grouping of units for bulk operations
-- **Cross-Space Inheritance** - Share configurations across space boundaries:
-  ```bash
-  cub unit create monitoring --space traderx-prod-us \
-    --upstream-unit platform-base/monitoring-standard
-  ```
+- **Bulk Operations** - Update multiple regions simultaneously
+- **Push-Upgrade** - Propagate base changes while preserving customizations (Stage 4)
+- **Upstream/Downstream** - Inheritance via `--upstream-space` notation (Stages 4, 7)
 
-ConfigHub maintains complete change history with rollback capabilities at the unit level.
+### Advanced Features (See acmetodo/TraderX) 🚀
 
-ConfigHub has an SDK and integrations with tools like Helm.
+**1. Functions** - Reusable, safe operations (vs manual patches)
+```bash
+# Safer than manual JSON patches
+cub function do set-image-reference web ":v2" --unit todo-app --space prod
+cub function do set-requested-memory api 16Gi --unit todo-app --space prod
+```
+
+**2. Triggers** - Automatic validation before apply
+```bash
+# Ensure no placeholders before deployment
+cub trigger create validate-complete Mutation "Kubernetes/YAML" no-placeholders
+
+# Enforce production policies (replicas > 1)
+cub trigger create replicated Mutation "Kubernetes/YAML" \
+  cel-validate 'r.kind != "Deployment" || r.spec.replicas > 1'
+```
+
+**3. Approvals** - Governance workflows
+```bash
+# Require approval before prod deployment
+cub trigger create require-approval Mutation "Kubernetes/YAML" is-approved 1
+cub unit approve --space prod todo-app
+```
+
+**4. Links** - Dependency management with needs/provides
+```bash
+# Express service dependencies
+cub link create trade-service-to-db \
+  trade-service-deployment \
+  database-deployment \
+  --space traderx-dev
+
+# ConfigHub auto-fills placeholders from linked units
+# See: https://docs.confighub.com/entities/link/
+```
+
+**5. Sets** - Logical grouping for bulk operations
+```bash
+# Group related units
+cub set create critical-services
+cub set add critical-services trade-service reference-data
+```
+
+### Additional Capabilities
+
+- **Cross-Space Inheritance** - Share configurations across space boundaries
+- **Revision Management** - Complete change history with rollback
+- **SDK and Integrations** - Go SDK, Helm, and more
+
+See [docs.confighub.com](https://docs.confighub.com) for comprehensive documentation.
 
 ---
 
