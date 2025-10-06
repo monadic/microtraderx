@@ -1,0 +1,13 @@
+#!/bin/bash
+# Get or create unique prefix for this microtraderx installation
+
+PREFIX_FILE=".microtraderx-prefix"
+
+if [ -f "$PREFIX_FILE" ]; then
+  cat "$PREFIX_FILE"
+else
+  # Generate new prefix
+  PREFIX=$(cub space new-prefix)
+  echo "$PREFIX" > "$PREFIX_FILE"
+  echo "$PREFIX"
+fi

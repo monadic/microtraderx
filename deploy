@@ -10,6 +10,17 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Get prefix
+if [ ! -x "bin/get-prefix" ]; then
+  echo "❌ Error: bin/get-prefix not found"
+  echo "   Run ./setup-structure first"
+  exit 1
+fi
+
+PREFIX=$(bin/get-prefix)
+echo "📛 Using prefix: $PREFIX"
+echo ""
+
 # Stage selection
 STAGE=${1:-7}
 
@@ -24,17 +35,17 @@ case $STAGE in
     kubectl create namespace confighub --dry-run=client -o yaml | kubectl apply -f - >/dev/null 2>&1
 
     # Create worker if it doesn't exist
-    WORKER_NAME="traderx-worker"
-    if ! cub worker list --space traderx 2>/dev/null | grep -q $WORKER_NAME; then
+    WORKER_NAME="${PREFIX}-traderx-worker"
+    if ! cub worker list --space ${PREFIX}-traderx 2>/dev/null | grep -q $WORKER_NAME; then
       echo "Creating ConfigHub worker..."
-      cub worker create $WORKER_NAME --space traderx
+      cub worker create $WORKER_NAME --space ${PREFIX}-traderx
     fi
 
     # Install worker to Kubernetes
     echo "Installing worker to Kubernetes..."
     cub worker install $WORKER_NAME \
       --namespace confighub \
-      --space traderx \
+      --space ${PREFIX}-traderx \
       --include-secret \
       --export > /tmp/worker-manifest.yaml
     kubectl apply -f /tmp/worker-manifest.yaml >/dev/null 2>&1
@@ -44,34 +55,34 @@ case $STAGE in
 
     # Set target on unit (auto-discovered as k8s-traderx-worker)
     TARGET_SLUG="k8s-${WORKER_NAME}"
-    cub unit set-target $TARGET_SLUG reference-data --space traderx || true
+    cub unit set-target $TARGET_SLUG reference-data --space ${PREFIX}-traderx || true
 
     # Apply unit
-    cub unit apply reference-data --space traderx
+    cub unit apply reference-data --space ${PREFIX}-traderx
 
-    echo -e "${GREEN}✓ Deployed reference-data to traderx${NC}"
+    echo -e "${GREEN}✓ Deployed reference-data to ${PREFIX}-traderx${NC}"
     echo ""
-    echo "Check status: kubectl get deployments -n traderx"
+    echo "Check status: kubectl get deployments -n ${PREFIX}-traderx"
     ;;
 
   2)
     echo "Stage 2: Deploy only production"
 
     # Create worker and target
-    cub worker create worker --space traderx-prod 2>/dev/null || echo "Worker already exists"
-    cub target create worker "{}" worker --space traderx-prod 2>/dev/null || echo "Target already exists"
+    cub worker create worker --space ${PREFIX}-traderx-prod 2>/dev/null || echo "Worker already exists"
+    cub target create worker "{}" worker --space ${PREFIX}-traderx-prod 2>/dev/null || echo "Target already exists"
 
     # Install worker to Kubernetes (using pinned working image)
     echo "Installing worker to Kubernetes..."
-    cub worker install worker --space traderx-prod --export 2>&1 | \
+    cub worker install worker --space ${PREFIX}-traderx-prod --export 2>&1 | \
       sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
       kubectl apply -f - >/dev/null 2>&1 || true
 
     # Set target and apply
-    cub unit set-target reference-data worker --space traderx-prod || true
-    cub unit apply reference-data --space traderx-prod
+    cub unit set-target reference-data worker --space ${PREFIX}-traderx-prod || true
+    cub unit apply reference-data --space ${PREFIX}-traderx-prod
 
-    echo -e "${GREEN}✓ Deployed to traderx-prod${NC}"
+    echo -e "${GREEN}✓ Deployed to ${PREFIX}-traderx-prod${NC}"
     echo -e "${YELLOW}Note: dev and staging are config-only (not deployed)${NC}"
     ;;
 
@@ -79,28 +90,28 @@ case $STAGE in
     echo "Stage 3: Deploy all regions with custom scale"
 
     for region in us eu asia; do
-      echo "  Deploying to traderx-prod-$region..."
+      echo "  Deploying to ${PREFIX}-traderx-prod-$region..."
 
       # Create worker and target
-      cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
-      cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
+      cub worker create worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$region "{}" worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | \
+      cub worker install worker-$region --space ${PREFIX}-traderx-prod-$region --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
-      cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
-      cub unit apply --space traderx-prod-$region --where "*"
+      cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
     done
 
     echo -e "${GREEN}✓ Deployed to all 3 regions${NC}"
     echo ""
     echo "Verify regional scale:"
-    echo "  kubectl get deploy trade-service -n traderx-prod-us -o jsonpath='{.spec.replicas}'"
-    echo "  kubectl get deploy trade-service -n traderx-prod-eu -o jsonpath='{.spec.replicas}'"
-    echo "  kubectl get deploy trade-service -n traderx-prod-asia -o jsonpath='{.spec.replicas}'"
+    echo "  kubectl get deploy trade-service -n ${PREFIX}-traderx-prod-us -o jsonpath='{.spec.replicas}'"
+    echo "  kubectl get deploy trade-service -n ${PREFIX}-traderx-prod-eu -o jsonpath='{.spec.replicas}'"
+    echo "  kubectl get deploy trade-service -n ${PREFIX}-traderx-prod-asia -o jsonpath='{.spec.replicas}'"
     ;;
 
   4)
@@ -108,26 +119,26 @@ case $STAGE in
 
     # Deploy all regions
     for region in us eu asia; do
-      echo "  Deploying to traderx-prod-$region..."
+      echo "  Deploying to ${PREFIX}-traderx-prod-$region..."
 
       # Create worker and target
-      cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
-      cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
+      cub worker create worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$region "{}" worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | \
+      cub worker install worker-$region --space ${PREFIX}-traderx-prod-$region --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
-      cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
-      cub unit apply --space traderx-prod-$region --where "*"
+      cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
     done
 
     echo ""
     echo -e "${YELLOW}Demo: Update base and push to regions${NC}"
     echo "  1. Update algorithm in base:"
-    echo "     cub unit update trade-service --space traderx-base \\"
+    echo "     cub unit update trade-service --space ${PREFIX}-traderx-base \\"
     echo "       --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"trade-service\",\"env\":[{\"name\":\"TRADING_ALGORITHM\",\"value\":\"v2\"}]}]}}}}'"
     echo ""
     echo "  2. Push upgrade (keeps regional replicas!):"
@@ -144,7 +155,7 @@ case $STAGE in
     echo -e "${YELLOW}Find and Fix Examples:${NC}"
     echo "  Scale down EU after market close:"
     echo "    cub run set-replicas --replicas 2 \\"
-    echo "      --space traderx-prod-eu \\"
+    echo "      --space ${PREFIX}-traderx-prod-eu \\"
     echo "      --where \"spec.replicas > 2\""
     echo ""
     echo "  Find old versions:"
@@ -160,9 +171,9 @@ case $STAGE in
     echo -e "${YELLOW}Changeset Example (run manually):${NC}"
     echo "  # Both services must update together!"
     echo "  cub changeset create market-data-v2"
-    echo "  cub unit update reference-data --space traderx-prod-us \\"
+    echo "  cub unit update reference-data --space ${PREFIX}-traderx-prod-us \\"
     echo "    --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"reference-data\",\"image\":\"traderx/reference-data:v2\"}]}}}}'"
-    echo "  cub unit update trade-service --space traderx-prod-us \\"
+    echo "  cub unit update trade-service --space ${PREFIX}-traderx-prod-us \\"
     echo "    --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"trade-service\",\"image\":\"traderx/trade-service:v2\"}]}}}}'"
     echo "  cub changeset apply market-data-v2  # Atomic!"
     ;;
@@ -172,54 +183,54 @@ case $STAGE in
 
     # Deploy dev/staging
     for env in dev staging; do
-      echo "  Deploying to traderx-$env..."
+      echo "  Deploying to ${PREFIX}-traderx-$env..."
 
       # Create worker and target
-      cub worker create worker-$env --space traderx-$env 2>/dev/null || echo "Worker already exists"
-      cub target create worker-$env "{}" worker-$env --space traderx-$env 2>/dev/null || echo "Target already exists"
+      cub worker create worker-$env --space ${PREFIX}-traderx-$env 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$env "{}" worker-$env --space ${PREFIX}-traderx-$env 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$env --space traderx-$env --export 2>&1 | \
+      cub worker install worker-$env --space ${PREFIX}-traderx-$env --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
-      cub unit set-target worker-$env --space traderx-$env --where "Slug != ''" || true
-      cub unit apply --space traderx-$env --where "*"
+      cub unit set-target worker-$env --space ${PREFIX}-traderx-$env --where "Slug != ''" || true
+      cub unit apply --space ${PREFIX}-traderx-$env --where "*"
     done
 
     # Deploy all regions
     for region in us eu asia; do
-      echo "  Deploying to traderx-prod-$region..."
+      echo "  Deploying to ${PREFIX}-traderx-prod-$region..."
 
       # Create worker and target
-      cub worker create worker-$region --space traderx-prod-$region 2>/dev/null || echo "Worker already exists"
-      cub target create worker-$region "{}" worker-$region --space traderx-prod-$region 2>/dev/null || echo "Target already exists"
+      cub worker create worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Worker already exists"
+      cub target create worker-$region "{}" worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$region --space traderx-prod-$region --export 2>&1 | \
+      cub worker install worker-$region --space ${PREFIX}-traderx-prod-$region --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
 
       # Set targets and apply all units
-      cub unit set-target worker-$region --space traderx-prod-$region --where "Slug != ''" || true
-      cub unit apply --space traderx-prod-$region --where "*"
+      cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
     done
 
     echo -e "${GREEN}✓ Complete system deployed!${NC}"
     echo ""
     echo "Environments:"
-    echo "  kubectl get deployments -n traderx-dev"
-    echo "  kubectl get deployments -n traderx-staging"
-    echo "  kubectl get deployments -n traderx-prod-us"
-    echo "  kubectl get deployments -n traderx-prod-eu"
-    echo "  kubectl get deployments -n traderx-prod-asia"
+    echo "  kubectl get deployments -n ${PREFIX}-traderx-dev"
+    echo "  kubectl get deployments -n ${PREFIX}-traderx-staging"
+    echo "  kubectl get deployments -n ${PREFIX}-traderx-prod-us"
+    echo "  kubectl get deployments -n ${PREFIX}-traderx-prod-eu"
+    echo "  kubectl get deployments -n ${PREFIX}-traderx-prod-asia"
     echo ""
     echo -e "${YELLOW}Emergency Bypass Example:${NC}"
     echo "  # Fix discovered in EU, push to Asia (skip US):"
     echo "  cub run set-env-var --env-var CIRCUIT_BREAKER=true \\"
-    echo "    --unit trade-service --space traderx-prod-eu"
-    echo "  cub unit update trade-service --space traderx-prod-asia \\"
+    echo "    --unit trade-service --space ${PREFIX}-traderx-prod-eu"
+    echo "  cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \\"
     echo "    --merge-unit traderx-prod-eu/trade-service"
     ;;
 

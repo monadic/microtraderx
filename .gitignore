@@ -14,3 +14,4 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+.microtraderx-prefix
