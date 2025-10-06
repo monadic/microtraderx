@@ -62,6 +62,24 @@ See [docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md) for full explanation.
 3. Kubernetes: Local (kind/minikube) or remote cluster
 4. jq: For JSON parsing (optional)
 
+### Pre-Flight Check
+
+Before starting the tutorial, verify your setup works:
+
+```bash
+./test-confighub-k8s
+```
+
+This mini TCK (Technology Compatibility Kit) verifies:
+- ✅ ConfigHub API connectivity
+- ✅ Kubernetes cluster access
+- ✅ Worker installation
+- ✅ End-to-end apply workflow
+
+**Expected**: `🎉 SUCCESS! ConfigHub + Kubernetes integration verified`
+
+See [TESTING.md](TESTING.md) for details.
+
 ## Quick Start
 
 ### Option 1: Run All Stages

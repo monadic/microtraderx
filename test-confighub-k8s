@@ -1,0 +1,119 @@
+#!/bin/bash
+set -e
+
+echo "🧪 ConfigHub + Kubernetes Mini TCK"
+echo "=================================="
+echo ""
+
+# Cleanup function
+cleanup() {
+  echo ""
+  echo "🧹 Cleaning up test resources..."
+  cub unit destroy test-pod --space confighub-tck 2>/dev/null || true
+  cub worker uninstall tck-worker --space confighub-tck 2>/dev/null || true
+  cub space delete confighub-tck 2>/dev/null || true
+  kind delete cluster --name confighub-tck 2>/dev/null || true
+  echo "✅ Cleanup complete"
+}
+
+# Trap exit to cleanup
+trap cleanup EXIT
+
+echo "Step 1: Create Kind cluster"
+echo "----------------------------"
+if kind get clusters 2>/dev/null | grep -q "^confighub-tck$"; then
+  echo "⚠️  Kind cluster 'confighub-tck' already exists, using it"
+else
+  kind create cluster --name confighub-tck --wait 60s
+  echo "✅ Kind cluster created"
+fi
+echo ""
+
+echo "Step 2: Create ConfigHub space"
+echo "-------------------------------"
+cub space create confighub-tck --label test=tck || true
+echo "✅ ConfigHub space created"
+echo ""
+
+echo "Step 3: Create test unit (nginx pod)"
+echo "-------------------------------------"
+cat > /tmp/tck-test-pod.yaml <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  namespace: default
+  labels:
+    app: tck-test
+spec:
+  containers:
+  - name: nginx
+    image: nginx:alpine
+    ports:
+    - containerPort: 80
+EOF
+
+cub unit create test-pod \
+  --space confighub-tck \
+  --data /tmp/tck-test-pod.yaml \
+  --label type=test
+echo "✅ Unit created in ConfigHub"
+echo ""
+
+echo "Step 4: Install ConfigHub worker"
+echo "---------------------------------"
+kubectl config use-context kind-confighub-tck
+cub worker install tck-worker \
+  --space confighub-tck \
+  --wait
+echo "✅ Worker installed"
+echo ""
+
+echo "Step 5: Apply unit to Kubernetes"
+echo "---------------------------------"
+cub unit apply test-pod --space confighub-tck
+echo "✅ Unit applied"
+echo ""
+
+echo "Step 6: Verify deployment"
+echo "-------------------------"
+echo "Waiting for pod to be ready..."
+kubectl wait --for=condition=ready pod/test-pod --timeout=60s
+
+# Check live state
+echo ""
+echo "Checking ConfigHub live state..."
+LIVE_STATE=$(cub unit get-live-state test-pod --space confighub-tck --format json)
+
+if echo "$LIVE_STATE" | jq -e '.status.phase == "Running"' > /dev/null; then
+  echo "✅ Pod is Running"
+else
+  echo "❌ Pod is not Running"
+  echo "$LIVE_STATE" | jq '.status'
+  exit 1
+fi
+
+# Verify pod exists in Kubernetes
+echo ""
+echo "Checking Kubernetes cluster..."
+POD_STATUS=$(kubectl get pod test-pod -o jsonpath='{.status.phase}')
+if [ "$POD_STATUS" = "Running" ]; then
+  echo "✅ Pod verified in Kubernetes: $POD_STATUS"
+else
+  echo "❌ Pod not running in Kubernetes: $POD_STATUS"
+  exit 1
+fi
+
+echo ""
+echo "🎉 SUCCESS! ConfigHub + Kubernetes integration verified"
+echo ""
+echo "Summary:"
+echo "  ✅ Kind cluster: confighub-tck"
+echo "  ✅ ConfigHub space: confighub-tck"
+echo "  ✅ ConfigHub unit: test-pod"
+echo "  ✅ Worker: tck-worker"
+echo "  ✅ Pod status: Running"
+echo ""
+echo "ConfigHub → Kubernetes flow is working correctly!"
+echo ""
+echo "Note: Resources will be cleaned up on exit"

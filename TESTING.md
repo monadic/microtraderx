@@ -1,5 +1,39 @@
 # MicroTraderX Testing Guide
 
+## Pre-Flight Check: Mini TCK
+
+**Before running the tutorial**, verify ConfigHub + Kubernetes integration is working:
+
+```bash
+./test-confighub-k8s
+```
+
+This minimal test creates:
+- ✅ One Kind cluster (`confighub-tck`)
+- ✅ One ConfigHub space (`confighub-tck`)
+- ✅ One unit (nginx pod)
+- ✅ One worker
+- ✅ One apply operation
+- ✅ Verification that pod is Running
+
+**Expected output:**
+```
+🎉 SUCCESS! ConfigHub + Kubernetes integration verified
+
+Summary:
+  ✅ Kind cluster: confighub-tck
+  ✅ ConfigHub space: confighub-tck
+  ✅ ConfigHub unit: test-pod
+  ✅ Worker: tck-worker
+  ✅ Pod status: Running
+```
+
+All resources are automatically cleaned up on exit.
+
+**If this test fails**, do not proceed with the tutorial. Fix your ConfigHub/Kubernetes setup first.
+
+---
+
 ## Quick Test
 
 ```bash
