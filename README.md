@@ -1,19 +1,39 @@
 # ConfigHub Tutorial
 
-WARNING - still testing this.  
-
 A 7-stage tutorial that demonstrates ConfigHub concepts through building a simplified trading platform with multi-region deployment.
 
 ---
 
 ## 📚 Documentation
 
+### Getting Started
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
 - **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - ASCII diagrams for each stage
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
+
+### Critical Concepts
+- **[docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md)** - 🔴 **READ THIS FIRST** - How ConfigHub manages state (setup vs deploy)
+- **[docs/AUTOUPDATES-AND-GITOPS.md](docs/AUTOUPDATES-AND-GITOPS.md)** - Why ConfigHub is NOT GitOps
+
+### Additional Resources
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
 - **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and topic/persona navigation
 - **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with "devops" apps
+
+---
+
+## ⚠️ Critical Concept: ConfigHub State Management
+
+ConfigHub uses a **two-state model** that is different from GitOps tools:
+
+```
+./setup-structure  →  Updates ConfigHub (desired state)
+./deploy           →  Applies to Kubernetes (live state)
+```
+
+**Key Insight**: Running `./setup-structure` does NOT deploy to Kubernetes. You must run `./deploy` to apply changes.
+
+See [docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md) for full explanation.
 
 ---
 
@@ -49,6 +69,26 @@ A 7-stage tutorial that demonstrates ConfigHub concepts through building a simpl
 ./stages/stage1-hello-traderx.sh
 kubectl get all -n traderx
 ```
+
+### Option 4: Bulk Operations (ConfigHub USP)
+```bash
+# After running stage 3 (multi-region):
+
+# Scale all regions to 3 replicas at once
+./bulk-operations 3 scale 3
+
+# Update version across all regions
+./bulk-operations 4 version v1.2.3
+
+# Check status across all regions
+./bulk-operations 3 status
+```
+
+**Why This Matters**: This demonstrates ConfigHub's key advantage over competitors like Cased:
+- **Cased**: Run workflow N times (once per region)
+- **ConfigHub**: Update once, push to N regions
+
+See `./bulk-operations help` for more examples.
 
 ## Project Structure
 
@@ -478,8 +518,9 @@ ConfigHub has an SDK and integrations with tools like Helm.
 
 ---
 
-## What to read
+## What to Read
 
+**Recommended learning path**:
 1. Read this README for overview
 2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
 3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
@@ -495,6 +536,13 @@ See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for command examples and ASCII before/aft
 - Stage 6: Atomic Updates
 - Stage 7: Emergency Bypass
 
+Each stage includes:
+- ASCII art diagrams showing the structure
+- Before/after visualizations
+- Command examples
+- Key concepts
+- Real-world scenarios
+
 ### Architecture Diagrams
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 - Complete system architecture (ConfigHub → Kubernetes)
@@ -503,21 +551,6 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 - Push-upgrade pattern (before/after)
 - Emergency lateral promotion flow
 - Multi-cluster deployment architecture
-
-- Stage 7: Emergency Bypass
-
-Each stage includes:
-- ASCII art diagrams showing the structure
-- Before/after visualizations
-- Command examples
-- Key concepts
-- Real-world scenarios
-
-**Recommended learning path**:
-1. Read this README for overview
-2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
-3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
-4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md)
 
 ---
 

@@ -20,18 +20,31 @@ case $STAGE in
   1)
     echo "Stage 1: Deploy to single space"
 
-    # Create worker and target if they don't exist
-    cub worker create worker --space traderx 2>/dev/null || echo "Worker already exists"
-    cub target create worker "{}" worker --space traderx 2>/dev/null || echo "Target already exists"
+    # Create confighub namespace
+    kubectl create namespace confighub --dry-run=client -o yaml | kubectl apply -f - >/dev/null 2>&1
 
-    # Install worker to Kubernetes (using pinned working image)
+    # Create worker if it doesn't exist
+    WORKER_NAME="traderx-worker"
+    if ! cub worker list --space traderx 2>/dev/null | grep -q $WORKER_NAME; then
+      echo "Creating ConfigHub worker..."
+      cub worker create $WORKER_NAME --space traderx
+    fi
+
+    # Install worker to Kubernetes
     echo "Installing worker to Kubernetes..."
-    cub worker install worker --space traderx --export 2>&1 | \
-      sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
-      kubectl apply -f - >/dev/null 2>&1 || true
+    cub worker install $WORKER_NAME \
+      --namespace confighub \
+      --space traderx \
+      --include-secret \
+      --export > /tmp/worker-manifest.yaml
+    kubectl apply -f /tmp/worker-manifest.yaml >/dev/null 2>&1
 
-    # Set unit target to worker
-    cub unit set-target reference-data worker --space traderx || true
+    # Wait for worker to connect
+    sleep 10
+
+    # Set target on unit (auto-discovered as k8s-traderx-worker)
+    TARGET_SLUG="k8s-${WORKER_NAME}"
+    cub unit set-target $TARGET_SLUG reference-data --space traderx || true
 
     # Apply unit
     cub unit apply reference-data --space traderx

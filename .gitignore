@@ -1,11 +1,16 @@
-# Ignore macOS files
-.DS_Store
+# Logs
+logs/
+*.log
 
-# Ignore vim/editor files
+# ConfigHub local state
+.cub-project
+
+# Temporary files
+*.tmp
 *.swp
 *.swo
 *~
 
-# Ignore any local test output
-test-output/
-*.log
+# OS files
+.DS_Store
+Thumbs.db

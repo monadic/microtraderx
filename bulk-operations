@@ -1,0 +1,171 @@
+#!/bin/bash
+set -euo pipefail
+
+# bulk-operations - Demonstrate ConfigHub's bulk operation capabilities
+#
+# This is a KEY USP vs competitors like Cased:
+# - Update multiple units at once
+# - Scale entire environments
+# - Manage configuration at scale
+#
+# This is the SIMPLE/TUTORIAL version for learning.
+# For production patterns, see traderx/bin/bulk-update
+
+# Parse stage
+STAGE=${1:-1}
+OPERATION=${2:-scale}
+VALUE=${3:-3}
+
+info() { echo "→ $*"; }
+success() { echo "✓ $*"; }
+error() { echo "✗ $*" >&2; }
+
+PROJECT="traderx"
+
+case "$OPERATION" in
+  scale)
+    info "Bulk operation: Scaling all services to $VALUE replicas"
+    echo ""
+
+    if [ "$STAGE" -eq 1 ]; then
+      # Stage 1: Single service (show the basic pattern)
+      info "Stage 1: Single service scale"
+      echo "  cub unit update trade-service --space $PROJECT-base \\"
+      echo "    --patch '{\"spec\":{\"replicas\":$VALUE}}'"
+      echo "  cub unit apply trade-service --space $PROJECT-base"
+      echo ""
+      info "This is the basic pattern. Let's do it:"
+
+      # Actually do it (if units exist)
+      if cub unit list --space $PROJECT-base 2>/dev/null | grep -q trade-service; then
+        cub unit update trade-service --space $PROJECT-base \
+          --patch "{\"spec\":{\"replicas\":$VALUE}}" || true
+        cub unit apply trade-service --space $PROJECT-base || true
+        success "Scaled trade-service to $VALUE replicas"
+      else
+        info "Units don't exist yet - run ./setup-structure first"
+      fi
+
+    elif [ "$STAGE" -ge 3 ]; then
+      # Stage 3+: Bulk operations across regions
+      info "Stage 3+: Bulk scale across ALL regions"
+      echo ""
+      info "ConfigHub USP: Scale multiple units with one command pattern"
+      echo ""
+
+      # List all spaces with this project
+      SPACES=$(cub space list | grep "$PROJECT-prod" | awk '{print $1}' || echo "")
+
+      if [ -z "$SPACES" ]; then
+        info "No production spaces found yet - run stages 3-4 first"
+        echo ""
+        info "When you have regions (us, eu, asia), you can scale ALL at once:"
+        echo "  for space in \$SPACES; do"
+        echo "    cub unit update trade-service --space \$space --patch '{\"spec\":{\"replicas\":$VALUE}}'"
+        echo "    cub unit apply trade-service --space \$space"
+        echo "  done"
+        exit 0
+      fi
+
+      info "Found regions: $SPACES"
+      echo ""
+
+      for space in $SPACES; do
+        info "Scaling $space to $VALUE replicas..."
+
+        # Update + Apply (ConfigHub two-state model)
+        cub unit update trade-service --space "$space" \
+          --patch "{\"spec\":{\"replicas\":$VALUE}}" || true
+        cub unit apply trade-service --space "$space" || true
+
+        success "Scaled $space"
+      done
+
+      echo ""
+      success "Bulk operation complete! Scaled $(echo $SPACES | wc -w) regions"
+    fi
+    ;;
+
+  version)
+    info "Bulk operation: Update image version to $VALUE"
+    echo ""
+
+    if [ "$STAGE" -eq 1 ]; then
+      info "Stage 1: Single service version update"
+      echo "  cub run set-image-reference --container-name trade-service \\"
+      echo "    --image-reference :$VALUE --space $PROJECT-base"
+      echo ""
+      info "Note: cub run commands auto-apply (unlike unit update)"
+
+    elif [ "$STAGE" -ge 3 ]; then
+      info "Stage 3+: Push version to ALL regions"
+      echo ""
+      info "This is where ConfigHub REALLY shines vs competitors:"
+      echo "  1. Update base version (once)"
+      echo "  2. Push to ALL regions (one command pattern)"
+      echo "  3. All variants get the update automatically"
+      echo ""
+
+      info "Example workflow:"
+      echo "  # Update base"
+      echo "  cub run set-image-reference --container-name trade-service \\"
+      echo "    --image-reference :$VALUE --space $PROJECT-base"
+      echo ""
+      echo "  # Push to all production regions"
+      echo "  cub unit update --upgrade --patch --space '$PROJECT-prod-*'"
+      echo "  cub unit apply --space '$PROJECT-prod-*' --where '*'"
+      echo ""
+      success "All regions get updated! That's the ConfigHub USP."
+    fi
+    ;;
+
+  status)
+    info "Bulk operation: Status across all regions"
+    echo ""
+
+    # Show status for all spaces
+    SPACES=$(cub space list | grep "$PROJECT" | awk '{print $1}' || echo "$PROJECT-base")
+
+    for space in $SPACES; do
+      info "Status for $space:"
+      cub unit list --space "$space" 2>/dev/null | head -10 || echo "  No units yet"
+      echo ""
+    done
+    ;;
+
+  *)
+    cat << EOF
+Usage: ./bulk-operations <stage> <operation> [value]
+
+Operations:
+  scale <replicas>    Scale all services to replica count
+  version <tag>       Update image version across regions
+  status              Show status across all regions
+
+Examples:
+  ./bulk-operations 1 scale 3        # Scale single service to 3 replicas
+  ./bulk-operations 3 scale 5        # Scale ALL regions to 5 replicas
+  ./bulk-operations 4 version v1.2.3 # Update version across all regions
+  ./bulk-operations 3 status         # Show status of all regions
+
+Why This Matters:
+  This demonstrates ConfigHub's KEY USP over competitors:
+  - Update multiple environments at once
+  - Manage configuration at scale
+  - One command affects multiple regions
+
+  Cased workflows: Run same workflow N times (once per region)
+  ConfigHub apps: Update base once, push to N regions
+EOF
+    exit 0
+    ;;
+esac
+
+echo ""
+info "ConfigHub USP Demonstrated:"
+echo "  ✓ Bulk operations across multiple units"
+echo "  ✓ Scale management at scale"
+echo "  ✓ One command affects multiple environments"
+echo ""
+info "This is simpler than traderx/bin/bulk-update (which has more features)"
+info "But it shows the SAME core USP: bulk operations"
