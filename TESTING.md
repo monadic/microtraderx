@@ -8,13 +8,14 @@
 ./test-confighub-k8s
 ```
 
-This minimal test creates:
-- ✅ One Kind cluster (`confighub-tck`)
-- ✅ One ConfigHub space (`confighub-tck`)
-- ✅ One unit (nginx pod)
-- ✅ One worker
-- ✅ One apply operation
-- ✅ Verification that pod is Running
+This runs the [ConfigHub + Kubernetes Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) from the devops-sdk repository.
+
+**What it tests:**
+- ✅ ConfigHub API connectivity
+- ✅ Kubernetes cluster access (creates Kind cluster)
+- ✅ Worker installation and connection
+- ✅ Unit apply workflow (ConfigHub → K8s)
+- ✅ Live state verification (K8s → ConfigHub)
 
 **Expected output:**
 ```
@@ -24,13 +25,19 @@ Summary:
   ✅ Kind cluster: confighub-tck
   ✅ ConfigHub space: confighub-tck
   ✅ ConfigHub unit: test-pod
-  ✅ Worker: tck-worker
+  ✅ Worker: tck-worker (connected)
   ✅ Pod status: Running
+  ✅ ConfigHub → Kubernetes flow: WORKING
 ```
 
 All resources are automatically cleaned up on exit.
 
 **If this test fails**, do not proceed with the tutorial. Fix your ConfigHub/Kubernetes setup first.
+
+**Note**: The wrapper script calls the TCK from devops-sdk. You can also run it directly:
+```bash
+curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-confighub-k8s | bash
+```
 
 ---
 

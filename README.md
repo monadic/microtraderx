@@ -70,10 +70,10 @@ Before starting the tutorial, verify your setup works:
 ./test-confighub-k8s
 ```
 
-This mini TCK (Technology Compatibility Kit) verifies:
+This runs the [ConfigHub + Kubernetes Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) (Technology Compatibility Kit) which verifies:
 - ✅ ConfigHub API connectivity
 - ✅ Kubernetes cluster access
-- ✅ Worker installation
+- ✅ Worker installation and connection
 - ✅ End-to-end apply workflow
 
 **Expected**: `🎉 SUCCESS! ConfigHub + Kubernetes integration verified`
