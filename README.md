@@ -44,7 +44,7 @@ ConfigHub supports multiple delivery and reconciliation models.  In this example
 
 This means that running `./setup-structure` does NOT deploy to Kubernetes. You must run `./deploy` to apply changes.
 
-If you have used [GitOps](https://opengitops.dev/) tools such as [FluxCD](https://fluxcd.io/) or [ArgoCD](https://argo-cd.readthedocs.io/), then you will be familiar with the idea that desired state changes can be immediately and automatically reconciled with the running state.  That means for example that when a configuration gets updated, the changes are deployed to Kubernetes.  ConfigHub can be set up to do this if you like, and has integration points for GitOps tools, KRM and Helm.  But it also lets you split up the GitOps 'flow' into smaller pieces.  This usage is consistent with modern practices eg. using the [FluxCD suspend function[(https://fluxcd.io/flux/cmd/flux_suspend/).
+If you have used [GitOps](https://opengitops.dev/) tools such as [FluxCD](https://fluxcd.io/) or [ArgoCD](https://argo-cd.readthedocs.io/), then you will be familiar with the idea that desired state changes can be immediately and automatically reconciled with the running state.  That means for example that when a configuration gets updated, the changes are deployed to Kubernetes.  ConfigHub can be set up to do this if you like, and has integration points for GitOps tools, KRM and Helm.  But it also lets you split up the GitOps 'flow' into smaller pieces.  This usage is consistent with modern practices eg. using the [FluxCD suspend function](https://fluxcd.io/flux/cmd/flux_suspend/).
 
 If you are interested in this topic you can read more in **[docs/APP-DEPLOYMENT.md](docs/APP-DEPLOYMENT.md)** 
 
