@@ -155,8 +155,48 @@ microtraderx/
 
 ---
 
-## ConfigHub Architecture in a nutshell
-> ConfigHub is a configuration database with a state machine. Every change is tracked, queryable, and reversible. ConfigHub maintains the desired state as the source of truth; Kubernetes reflects the executed state.
+## ConfigHub as a Configuration Database
+
+Think of ConfigHub like a database for your infrastructure configuration:
+
+| Database Concept | ConfigHub Equivalent | Example |
+|------------------|---------------------|---------|
+| **Table** | Space | `traderx-prod-us` |
+| **Row** | Unit | `trade-service` unit |
+| **Column** | Unit field | `Data`, `Labels`, `Space.Slug` |
+| **SQL Query** | WHERE clause | `WHERE Slug = 'trade-service'` |
+| **Transaction** | Changeset | Atomic multi-unit updates |
+| **Foreign Key** | Upstream relationship | `--upstream-unit base/service` |
+| **View** | Filter | Saved queries for reuse |
+
+### Database Operations
+
+```bash
+# SELECT: Query units like database rows
+cub unit list --space "*" \
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
+  --columns Name,Space.Slug,Data
+
+# UPDATE: Modify units in place
+cub unit update --space "*" \
+  --where "Slug = 'trade-service'" \
+  --patch '{"spec":{"replicas":3}}'
+
+# INSERT: Create new units
+cub unit create trade-service --space prod --data service.yaml
+
+# DELETE: Remove units
+cub unit delete trade-service --space dev
+```
+
+### State Machine
+
+ConfigHub is a configuration database with a state machine:
+- Every change is tracked (revisions)
+- Changes are queryable (WHERE clauses)
+- Changes are reversible (rollback to any revision)
+- ConfigHub maintains **desired state** as source of truth
+- Kubernetes reflects **executed state** after apply
 
 ## Core Implementation Pattern
 
@@ -241,22 +281,37 @@ traderx-prod/
 
 ---
 
-## Stage 3: Variants and Customisation 
+## Stage 3: Inheritance and Regional Customization
 
-Deploy the same platform with in three regions with region-specific scaling based on trading volume.  Each region is a variant - a customized copy of the same base configuration. Regional units will later inherit from base using `--upstream-unit`.
+Deploy three regions with region-specific scaling using inheritance. Each region inherits from base via `--upstream-unit`, creating variants with shared config but custom replicas.
+
+**Why inheritance matters:**
+- Shared configuration in base → all regions get same app version
+- Regional customizations (replicas) stay independent
+- Foundation for push-upgrade in Stage 4
 
 ```bash
 # setup-structure
-# Now add trade-service (handles actual trades)
-cub unit create trade-service --space traderx-prod --data trade-service.yaml
+# Create base with shared configuration
+cub space create traderx-base
+cub unit create reference-data --space traderx-base --data reference-data.yaml
+cub unit create trade-service --space traderx-base --data trade-service.yaml
 
+# Create regions with upstream relationships (not copy!)
 for region in us eu asia; do
   cub space create traderx-prod-$region
-  cub unit copy reference-data --from traderx-prod --to traderx-prod-$region
-  cub unit copy trade-service --from traderx-prod --to traderx-prod-$region
+
+  # Link to base using --upstream-unit
+  cub unit create reference-data \
+    --space traderx-prod-$region \
+    --upstream-unit traderx-base/reference-data
+
+  cub unit create trade-service \
+    --space traderx-prod-$region \
+    --upstream-unit traderx-base/trade-service
 done
 
-# Customize per region based on trading volume!
+# Customize per region based on trading volume
 cub unit update trade-service --space traderx-prod-us \
   --patch '{"replicas": 3}'    # NYSE hours = normal volume
 
@@ -272,18 +327,23 @@ for region in us eu asia; do
 done
 ```
 
+Structure shows inheritance relationships:
 ```
+traderx-base/
+├── reference-data (base config)
+└── trade-service (base config)
+    ↓ upstream relationships
 traderx-prod-us/
-├── reference-data (replicas: 1)
-└── trade-service (replicas: 3) ✓  # NYSE hours
+├── reference-data (→base)
+└── trade-service (→base, replicas: 3) ✓  # NYSE hours
 
 traderx-prod-eu/
-├── reference-data (replicas: 1)
-└── trade-service (replicas: 5) ✓  # Peak trading!
+├── reference-data (→base)
+└── trade-service (→base, replicas: 5) ✓  # Peak trading!
 
 traderx-prod-asia/
-├── reference-data (replicas: 1)
-└── trade-service (replicas: 2) ✓  # Overnight trading
+├── reference-data (→base)
+└── trade-service (→base, replicas: 2) ✓  # Overnight trading
 ```
 
 
@@ -413,6 +473,54 @@ cub unit update --filter high-volume-trading --space "*" --patch '...'
 cub unit apply --filter high-volume-trading --space "*"
 ```
 
+### ConfigHub Functions: Type-Safe Operations
+
+The examples above use `--patch` with raw JSON. ConfigHub provides **functions** as a safer, more maintainable alternative:
+
+```bash
+# ❌ Raw patch (works but error-prone)
+cub unit update trade-service --space prod-us \
+  --patch '{"spec":{"replicas":3}}'
+
+# ✅ Function (type-safe, self-documenting)
+cub run set-replicas --replicas 3 \
+  --space prod-us --unit trade-service
+```
+
+**Why functions are better:**
+- **Type-safe**: Validates inputs before applying
+- **Self-documenting**: `set-replicas` is clearer than JSON patch path
+- **Composable**: Functions can be chained and scripted
+- **Consistent**: Same operation works across different resource types
+
+**Common functions:**
+```bash
+# Scale replicas
+cub run set-replicas --replicas 5 --unit trade-service --space prod-eu
+
+# Update container image
+cub run set-image-reference --container-name api --image-reference :v2.0 \
+  --unit trade-service --space prod-us
+
+# Set environment variable
+cub run set-env-var --env-var CIRCUIT_BREAKER=true \
+  --unit trade-service --space prod-eu
+
+# Set resource limits
+cub run set-requested-memory --container-name api --memory 2Gi \
+  --unit trade-service --space prod-asia
+```
+
+Functions work with WHERE clauses too:
+```bash
+# Scale all prod regions at once using function
+cub run set-replicas --replicas 3 \
+  --space "*" --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'"
+```
+
+**When to use what:**
+- **Functions**: Preferred for common operations (scale, env vars, images)
+- **Patches**: Needed for complex or uncommon changes
 
 ---
 

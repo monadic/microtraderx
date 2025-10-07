@@ -48,16 +48,29 @@ case $STAGE in
     ;;
 
   3)
-    echo "Stage 3: Three Regions with Custom Scale"
-    cub space create ${PREFIX}-traderx-prod || true
-    cub unit create --space ${PREFIX}-traderx-prod reference-data k8s/reference-data.yaml || true
-    cub unit create --space ${PREFIX}-traderx-prod trade-service k8s/trade-service.yaml || true
+    echo "Stage 3: Three Regions with Inheritance"
+    # Create base space for shared config
+    cub space create ${PREFIX}-traderx-base || true
+    cub unit create --space ${PREFIX}-traderx-base reference-data k8s/reference-data.yaml || true
+    cub unit create --space ${PREFIX}-traderx-base trade-service k8s/trade-service.yaml || true
 
+    # Create regions with upstream relationships
     for region in us eu asia; do
-      echo "  Creating ${PREFIX}-traderx-prod-$region..."
+      echo "  Creating ${PREFIX}-traderx-prod-$region with inheritance..."
       cub space create ${PREFIX}-traderx-prod-$region || true
-      cub unit copy reference-data --from ${PREFIX}-traderx-prod --to ${PREFIX}-traderx-prod-$region || true
-      cub unit copy trade-service --from ${PREFIX}-traderx-prod --to ${PREFIX}-traderx-prod-$region || true
+
+      # Create units with upstream links (not copy!)
+      cub unit create reference-data \
+        --space ${PREFIX}-traderx-prod-$region \
+        --upstream-space ${PREFIX}-traderx-base \
+        --upstream-unit reference-data \
+        --data k8s/reference-data.yaml || true
+
+      cub unit create trade-service \
+        --space ${PREFIX}-traderx-prod-$region \
+        --upstream-space ${PREFIX}-traderx-base \
+        --upstream-unit trade-service \
+        --data k8s/trade-service.yaml || true
     done
 
     # Regional customizations based on trading volume
@@ -69,7 +82,8 @@ case $STAGE in
     cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
       --patch '{"spec":{"replicas":2}}' || true  # Overnight
 
-    echo -e "${GREEN}✓ Created 3 regions with custom scale${NC}"
+    echo -e "${GREEN}✓ Created base + 3 regions with inheritance${NC}"
+    echo "  Base: ${PREFIX}-traderx-base (shared config)"
     echo "  US: 3 replicas (NYSE hours)"
     echo "  EU: 5 replicas (Peak trading)"
     echo "  Asia: 2 replicas (Overnight)"
