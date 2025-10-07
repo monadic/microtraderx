@@ -556,6 +556,8 @@ After completing this tutorial, you should be able to:
 
 This tutorial covered ConfigHub basics. For production-grade features, see the full [TraderX implementation](https://github.com/monadic/traderx).  We also have an [acmetodo example](https://docs.confighub.com/howto/acmetodo/).
 
+**Interested in extending this tutorial?** See [docs/FUTURE-ENHANCEMENTS.md](docs/FUTURE-ENHANCEMENTS.md) for potential additions and advanced features roadmap.
+
 ### Features Demonstrated in This Tutorial ✅
 - **Changesets** - Atomic operations across multiple units (Stage 6)
 - **Filters** - Reusable query definitions (Stage 5)

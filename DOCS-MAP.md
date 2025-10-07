@@ -13,7 +13,10 @@ microtraderx/
 ├── ARCHITECTURE.md        📊 System architecture diagrams
 ├── QUICKSTART.md          🚀 Get started quickly
 ├── TESTING.md             🧪 Testing and validation
-└── TEST_REPORT.md         📋 Test results and coverage
+├── TEST_REPORT.md         📋 Test results and coverage
+└── docs/
+    ├── APP-DEPLOYMENT.md       🚢 Deployment patterns (setup vs deploy)
+    └── FUTURE-ENHANCEMENTS.md  🔮 Potential advanced features
 ```
 
 ---
@@ -45,6 +48,15 @@ microtraderx/
    - Run the stages yourself
    - Troubleshoot issues
    - Validate your setup
+
+5. **docs/APP-DEPLOYMENT.md** (If confused about setup vs deploy)
+   - Two-script pattern explained
+   - ConfigHub vs GitOps
+   - State management
+
+6. **docs/FUTURE-ENHANCEMENTS.md** (If curious about what's next)
+   - Potential advanced features
+   - Roadmap for enhancements
 
 ---
 
@@ -315,6 +327,9 @@ When updating docs, maintain this structure:
 | How do I test it? | TESTING.md |
 | What was tested? | TEST_REPORT.md |
 | What's the project about? | README.md |
+| Why doesn't setup deploy? | docs/APP-DEPLOYMENT.md |
+| What advanced features exist? | docs/FUTURE-ENHANCEMENTS.md |
+| Can I extend this tutorial? | docs/FUTURE-ENHANCEMENTS.md |
 
 ---
 
