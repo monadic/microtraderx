@@ -214,10 +214,10 @@ We recommend using two primary scripts:
 | 1 | Spaces, Units, Workers | Basic building blocks |
 | 2 | Environments | Spaces as environments |
 | 3 | Regional Scale | Business-driven configuration |
-| 4 | Push-Upgrade | Update base, preserve customizations |
+| 4 | Upgrade | Update base, preserve customizations |
 | 5 | Find and Fix | SQL WHERE clauses |
 | 6 | Atomic Updates | Changesets for related services |
-| 7 | Emergency Bypass | Lateral promotion |
+| 7 | Emergency Fixes | Lateral promotion |
 
 ## Example Scenario: updating custom configs
 
