@@ -506,8 +506,9 @@ cub run set-image-reference --container-name api --image-reference :v2.0 \
 cub run set-env-var --env-var CIRCUIT_BREAKER=true \
   --unit trade-service --space prod-eu
 
-# Set resource limits
-cub run set-requested-memory --container-name api --memory 2Gi \
+# Set resource limits (requests and limits)
+cub run set-container-resources --container-name api \
+  --operation all --cpu 250m --memory 2Gi --limit-factor 2 \
   --unit trade-service --space prod-asia
 ```
 
