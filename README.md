@@ -155,9 +155,9 @@ microtraderx/
 
 ---
 
-## ConfigHub as a Configuration Database
+## ConfigHub as a Configuration Database with extras
 
-Think of ConfigHub like a database for your infrastructure configuration:
+Think of ConfigHub like a database for your config:
 
 | Database Concept | ConfigHub Equivalent | Example |
 |------------------|---------------------|---------|
@@ -169,7 +169,7 @@ Think of ConfigHub like a database for your infrastructure configuration:
 | **Foreign Key** | Upstream relationship | `--upstream-unit base/service` |
 | **View** | Filter | Saved queries for reuse |
 
-### Database Operations
+### Config Operations
 
 ```bash
 # SELECT: Query units like database rows
@@ -189,7 +189,7 @@ cub unit create trade-service --space prod --data service.yaml
 cub unit delete trade-service --space dev
 ```
 
-### State Machine
+### Versions and Mutations
 
 ConfigHub is a configuration database with a state machine:
 - Every change is tracked (revisions)
