@@ -299,6 +299,15 @@ Propagate base changes while preserving regional customizations.  Variants inher
 - Single source of truth for shared configuration
 - Without base: Must update each region manually, risking inconsistency
 
+### ⚠️ Critical: Two-Phase Update
+
+ConfigHub uses a two-phase update model:
+
+1. **Update phase**: `cub unit update` changes ConfigHub database only
+2. **Apply phase**: `cub unit apply` deploys to Kubernetes
+
+**This means**: After `cub unit update --upgrade`, your config is updated but pods are still running the old version until you run `cub unit apply`.
+
 ```bash
 # Create base + regions with inheritance
 cub space create traderx-base
@@ -330,6 +339,10 @@ cub unit update --dry-run --upgrade --patch --space "traderx-prod-us"
 
 # Push upgrade (preserves regional replicas!)
 cub unit update --upgrade --patch --space "traderx-prod-*"
+
+# ⚠️ Config updated in ConfigHub, but NOT deployed yet!
+# Kubernetes pods still running old version until you apply:
+cub unit apply --space "traderx-prod-*" --where "*"
 ```
 
 Tree output shows variant hierarchy:
@@ -354,30 +367,50 @@ traderx-base/trade-service (v2: NEW algorithm)
 
 ## Stage 5: Query and Filter Operations
 
-SQL-like WHERE clauses work across all spaces. Filters provide reusable query definitions.
+WHERE clauses enable precise bulk operations across spaces. This is ConfigHub's operational pattern.
+
+### The Operational Workflow
 
 ```bash
-# Create a reusable filter for high-volume services
-cub filter create high-volume-trading Unit \
-  --where-field "Data CONTAINS 'replicas:' AND
-                 Data NOT LIKE '%replicas: 1%' AND
-                 Data NOT LIKE '%replicas: 2%'"
-
-# Now anyone can use this filter without remembering the query!
-cub unit list --filter high-volume-trading --space "*"
-
-# Output:
-# traderx-prod-us/trade-service (replicas: 3)
-# traderx-prod-eu/trade-service (replicas: 5)
-
-# Scale down EU after market close using the filter
-cub run set-replicas --replicas 2 \
-  --filter high-volume-trading \
-  --space "traderx-prod-eu"
-
-# Or find all services using old image version
+# Step 1: Query to identify target units
 cub unit list --space "*" \
-  --where "Data CONTAINS 'image:' AND Data CONTAINS ':v1'"
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
+  --columns Name,Space.Slug,HeadRevisionNum
+
+# Output shows exactly which units will be affected:
+# NAME            SPACE                      HEAD-REVISION
+# trade-service   traderx-prod-us            5
+# trade-service   traderx-prod-eu            5
+# trade-service   traderx-prod-asia          5
+
+# Step 2: Update using the same WHERE clause
+cub unit update --space "*" \
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
+  --patch '{"spec":{"replicas":3}}'
+
+# Step 3: Verify changes were made
+cub unit list --space "*" \
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
+  --columns Name,Space.Slug,HeadRevisionNum  # Revision incremented
+
+# Step 4: Apply to Kubernetes
+cub unit apply --space "*" \
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'"
+```
+
+**Key Pattern**: Same WHERE clause for query → update → apply ensures you target the exact same set.
+
+### Advanced: Reusable Filters
+
+```bash
+# Create named filter for common queries
+cub filter create high-volume-trading Unit \
+  --where-field "Data CONTAINS 'replicas:' AND replicas > 2"
+
+# Use filter instead of WHERE clause
+cub unit list --filter high-volume-trading --space "*"
+cub unit update --filter high-volume-trading --space "*" --patch '...'
+cub unit apply --filter high-volume-trading --space "*"
 ```
 
 

@@ -48,41 +48,58 @@ case "$OPERATION" in
 
     elif [ "$STAGE" -ge 3 ]; then
       # Stage 3+: Bulk operations across regions
-      info "Stage 3+: Bulk scale across ALL regions"
+      info "Stage 3+: Bulk scale across ALL regions using WHERE clauses"
       echo ""
-      info "ConfigHub USP: Scale multiple units with one command pattern"
+      info "ConfigHub Operational Pattern: Query → Update → Apply"
       echo ""
 
-      # List all spaces with this project
-      SPACES=$(cub space list | grep "$PROJECT-prod" | awk '{print $1}' || echo "")
+      # Step 1: Query to identify targets
+      info "Step 1: Query units that match criteria"
+      echo "  cub unit list --space '*' --where \"Slug = 'trade-service' AND Space.Slug LIKE '%prod%'\""
+      echo ""
 
-      if [ -z "$SPACES" ]; then
-        info "No production spaces found yet - run stages 3-4 first"
+      UNITS=$(cub unit list --space '*' --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" 2>/dev/null | tail -n +2 | wc -l || echo "0")
+
+      if [ "$UNITS" -eq 0 ]; then
+        info "No production trade-service units found - run stages 3-4 first"
         echo ""
-        info "When you have regions (us, eu, asia), you can scale ALL at once:"
-        echo "  for space in \$SPACES; do"
-        echo "    cub unit update trade-service --space \$space --patch '{\"spec\":{\"replicas\":$VALUE}}'"
-        echo "    cub unit apply trade-service --space \$space"
-        echo "  done"
+        info "The operational pattern is:"
+        echo "  1. Query:  cub unit list --where '...' --space '*'"
+        echo "  2. Update: cub unit update --where '...' --space '*' --patch '...'"
+        echo "  3. Apply:  cub unit apply --where '...' --space '*'"
         exit 0
       fi
 
-      info "Found regions: $SPACES"
+      info "Found $UNITS production trade-service units"
       echo ""
 
-      for space in $SPACES; do
-        info "Scaling $space to $VALUE replicas..."
+      # Step 2: Update using WHERE clause
+      info "Step 2: Update all matching units"
+      echo "  cub unit update --space '*' --where \"Slug = 'trade-service' AND Space.Slug LIKE '%prod%'\" --patch '{\"spec\":{\"replicas\":$VALUE}}'"
+      echo ""
 
-        # Update + Apply (ConfigHub two-state model)
-        cub unit update trade-service --space "$space" \
-          --patch "{\"spec\":{\"replicas\":$VALUE}}" || true
-        cub unit apply trade-service --space "$space" || true
+      cub unit update --space '*' \
+        --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
+        --patch "{\"spec\":{\"replicas\":$VALUE}}" 2>/dev/null || true
 
-        success "Scaled $space"
-      done
+      success "Updated ConfigHub config for $UNITS units"
+      echo ""
+
+      # Step 3: Apply using WHERE clause
+      info "Step 3: Apply changes to Kubernetes"
+      echo "  cub unit apply --space '*' --where \"Slug = 'trade-service' AND Space.Slug LIKE '%prod%'\""
+      echo ""
+
+      cub unit apply --space '*' \
+        --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" 2>/dev/null || true
 
       echo ""
-      success "Bulk operation complete! Scaled $(echo $SPACES | wc -w) regions"
+      success "Bulk operation complete! Scaled $UNITS production regions using WHERE clauses"
+      echo ""
+      info "This demonstrates ConfigHub's operational pattern:"
+      echo "  ✓ One WHERE clause targets multiple units across spaces"
+      echo "  ✓ No loops needed - ConfigHub handles the iteration"
+      echo "  ✓ Same pattern works for 3 units or 300 units"
     fi
     ;;
 
