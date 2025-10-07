@@ -48,8 +48,8 @@ We invite you to try these features out and 'remix' them:
 ### Production
 In production you might...
 1. Update ConfigHub (via CI/CD, API, or CLI)
-2. Review/approve changes
-3. Deploy during maintenance window
+2. Review/approve changes - you can also use apply gates in ConfigHub
+3. Deploy during maintenance window 
 
 ## Stage-by-Stage Behavior
 
@@ -304,7 +304,7 @@ cub unit push-upgrade --from dev --to staging
 cub unit apply backend-api --space staging
 ```
 
-### Pattern 3: Version Rollout (Preferred)
+### Pattern 3: Version Rollout 
 ```bash
 # Update image in dev
 cub run set-image-reference \
@@ -346,43 +346,20 @@ spec:
       value: "8080"  # Simple value, not tcp://...
 ```
 
-## Mental Models
-
-Think of ConfigHub like **Git + Manual Deploy**:
+## Mental Models in this example
 
 ```
 Git:        git commit → git push → (CI/CD) → deploy
 ConfigHub:  cub unit update → cub unit apply → infrastructure updates
 ```
 
-**NOT like GitOps**:
 
 ```
 GitOps:     git push → auto-sync → auto-deploy → continuous reconcile
 ConfigHub:  cub unit update → (STOPS HERE until manual apply)
 ```
 
-## Advantages of ConfigHub's Approach
 
-1. **Explicit Control**: You decide when changes deploy
-2. **Approval Gates**: Review changes before applying
-3. **Change Windows**: Deploy during maintenance windows
-4. **Blast Radius**: Test in dev before promoting
-5. **Audit Trail**: Clear record of who applied what and when
-
-## Potential Challenges (and Mitigations)
-
-1. **Manual Steps**: Can forget to apply
-   - **Mitigation**: Always pair update + apply in scripts
-
-2. **State Drift**: ConfigHub and infrastructure diverge
-   - **Mitigation**: Regularly verify state consistency
-
-3. **Not Truly GitOps**: Doesn't auto-reconcile
-   - **Mitigation**: Use workers with auto-apply for specific use cases
-
-4. **Learning Curve**: Two-state model is unintuitive
-   - **Mitigation**: This document + clear examples
 
 ## See Also
 
