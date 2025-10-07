@@ -1,24 +1,21 @@
-# ConfigHub Tutorial - MicroTraderX
+# ConfigHub MicroTraderX Tutorial
 
-A 7-stage progressive tutorial that teaches ConfigHub fundamentals through building a simplified trading platform with multi-region deployment.
+Learn ConfigHub fundamentals by building a simplified trading platform with multi-region deployment.
 
 ## 📚 Tutorial vs Production
 
-**MicroTraderX (This Tutorial)** - Learn ConfigHub Basics
-- 📖 Progressive learning (7 stages)
-- 🎯 Simple examples (1-2 services)
-- 🔧 Core patterns only (spaces, units, push-upgrade)
-- 🎓 Educational focus with clear explanations
-- ⏱️ Complete in 30-60 minutes
+**Tutorial: MicroTraderX** 
+- Step by step examples teach the basics of ConfigHub apps 
+- Core features: spaces, units, deployment, upgrade
+- Option to showcase bulk ops and other extended capability
 
-**[TraderX](https://github.com/monadic/traderx)** - Production Patterns
-- 🏢 Full 9-service FINOS application
-- 🚀 Advanced ConfigHub features (Links, Filters, Bulk Ops)
-- 🔗 Complex dependency management
-- 📊 Production-ready monitoring and validation
-- 🎯 Real-world deployment scenarios
 
-**Learning Path**: Start with MicroTraderX to understand ConfigHub basics, then explore TraderX for production-grade patterns.
+**Production: [TraderX](https://github.com/monadic/traderx)** 
+- The [TraderX reference application from FINOS](https://github.com/finos/traderX) ported to ConfigHub
+- Extended features: bulk operations, links, filters
+- Dependency management, real world deployment patterns, monitoring and validation
+
+We recommend you start with MicroTraderX to understand ConfigHub basics, then explore TraderX for production patterns.
 
 ---
 
@@ -28,10 +25,6 @@ A 7-stage progressive tutorial that teaches ConfigHub fundamentals through build
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
 - **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - ASCII diagrams for each stage
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
-
-### Critical Concepts
-- **[docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md)** - 🔴 **READ THIS FIRST** - How ConfigHub manages state (setup vs deploy)
-- **[docs/AUTOUPDATES-AND-GITOPS.md](docs/AUTOUPDATES-AND-GITOPS.md)** - Why ConfigHub is NOT GitOps
 
 ### Additional Resources
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
@@ -53,7 +46,14 @@ ConfigHub uses a **two-state model** that is different from GitOps tools:
 
 See [docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md) for full explanation.
 
+### Critical Concepts
+- **[docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md)** - 🔴 **READ THIS FIRST** - How ConfigHub manages state (setup vs deploy)
+- **[docs/AUTOUPDATES-AND-GITOPS.md](docs/AUTOUPDATES-AND-GITOPS.md)** - Why ConfigHub is NOT GitOps
+
+
 ---
+
+# Running the MicroTraderX example app 
 
 ## Prerequisites
 
@@ -64,23 +64,31 @@ See [docs/STATE-MANAGEMENT.md](docs/STATE-MANAGEMENT.md) for full explanation.
 
 ### Pre-Flight Check
 
-Before starting the tutorial, verify your setup works:
+We recommend that you verify your setup before starting the Tutorial:
 
 ```bash
 ./test-confighub-k8s
 ```
 
-This runs the [ConfigHub + Kubernetes Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) (Technology Compatibility Kit) which verifies:
+This runs a [Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) which tests:
 - ✅ ConfigHub API connectivity
-- ✅ Kubernetes cluster access
-- ✅ Worker installation and connection
+- ✅ Kubernetes (Kind) cluster access 
+- ✅ ConfigHub Worker installation and connection
 - ✅ End-to-end apply workflow
 
-**Expected**: `🎉 SUCCESS! ConfigHub + Kubernetes integration verified`
+You should see: `🎉 SUCCESS! ConfigHub + Kubernetes integration verified`
 
 See [TESTING.md](TESTING.md) for details.
 
 ## Quick Start
+
+There are several options for running MicroTraderX:
+1. Run all 7 stages in sequence
+2. Run one stage only
+3. Quick demo
+4. Bulk operations intro
+
+These are explained below.
 
 ### Option 1: Run All Stages
 ```bash
@@ -106,7 +114,7 @@ See [TESTING.md](TESTING.md) for details.
 kubectl get all -n traderx
 ```
 
-### Option 4: Bulk Operations (ConfigHub USP)
+### Option 4: Bulk Operations 
 ```bash
 # After running stage 3 (multi-region):
 
@@ -119,10 +127,6 @@ kubectl get all -n traderx
 # Check status across all regions
 ./bulk-operations 3 status
 ```
-
-**Why This Matters**: This demonstrates ConfigHub's key advantage over competitors like Cased:
-- **Cased**: Run workflow N times (once per region)
-- **ConfigHub**: Update once, push to N regions
 
 See `./bulk-operations help` for more examples.
 
@@ -153,16 +157,16 @@ microtraderx/
 
 ---
 
-## ConfigHub Architecture
+## ConfigHub Architecture in a nutshell
 > ConfigHub is a configuration database with a state machine. Every change is tracked, queryable, and reversible. ConfigHub maintains the desired state as the source of truth; Kubernetes reflects the executed state.
 
 ## Core Implementation Pattern
 
-ConfigHub projects use two primary scripts:
+We recommend using two primary scripts:
 
 ```bash
-./setup-structure   # Creates ConfigHub structure (spaces, units, relationships)
-./deploy           # Deploys to Kubernetes (workers + apply)
+./setup-structure   # Create ConfigHub structure: spaces, units, relationships
+./deploy           # Deployment to Kubernetes using config workers + apply
 ```
 
 ## Tutorial Stages
@@ -177,21 +181,21 @@ ConfigHub projects use two primary scripts:
 | 6 | Atomic Updates | Changesets for related services |
 | 7 | Emergency Bypass | Lateral promotion |
 
-## Example Scenario
+## Example Scenario: updating custom configs
 
-The tutorial uses a global trading platform with region-specific scaling:
+The tutorial imagines a 'global trading platform' with region-specific scaling:
 
 - US: 3 replicas (NYSE hours, normal volume)
 - EU: 5 replicas (London + Frankfurt, peak trading)
 - Asia: 2 replicas (Tokyo overnight, low volume)
 
-Challenge: Update the trading algorithm globally while preserving regional replica counts.
-
-Solution: ConfigHub's push-upgrade pattern preserves local customizations during base updates.
+Each region has a custom config.  We'd like push out a global update to the trading programs, while preserving regional replica counts.  Our solution uses ConfigHub which supports upgrades that understand and preserve local customizations.
 
 ---
 
 ## Stage 1: Hello TraderX
+
+Spaces contain units. Workers deploy them to Kubernetes.
 
 ```bash
 # setup-structure
@@ -208,11 +212,13 @@ traderx/
 └── reference-data (market data service)
 ```
 
-**Key concept**: Spaces contain units. Workers deploy them to Kubernetes.
+
 
 ---
 
 ## Stage 2: Three Environments
+
+Each environment can be a separate space. Copy operations promote configurations.
 
 ```bash
 # setup-structure
@@ -235,13 +241,11 @@ traderx-prod/
 └── reference-data (deployed) ✓
 ```
 
-**Key concept**: Each environment is a separate space. Copy operations promote configurations.
-
 ---
 
-## Stage 3: Three Regions, Three Trading Volumes
+## Stage 3: Variants and Customisation 
 
-Deploy the same platform with region-specific scaling based on trading volume.
+Deploy the same platform with in three regions with region-specific scaling based on trading volume.  Each region is a variant - a customized copy of the same base configuration. Regional units will later inherit from base using `--upstream-unit`.
 
 ```bash
 # setup-structure
@@ -284,13 +288,12 @@ traderx-prod-asia/
 └── trade-service (replicas: 2) ✓  # Overnight trading
 ```
 
-**Key concept**: Each region is a variant - a customized copy of the same base configuration. Regional units will later inherit from base using `--upstream-unit`.
 
 ---
 
-## Stage 4: Push-Upgrade Pattern
+## Stage 4: Upgrade Pattern
 
-Propagate base changes while preserving regional customizations.
+Propagate base changes while preserving regional customizations.  Variants inherit from base via `--upstream-unit`. Upgrade propagates base changes while preserving variant customizations.
 
 **Why base configurations exist:**
 - Update application version in one place → flows to all variants
@@ -348,11 +351,12 @@ traderx-base/trade-service (v2: NEW algorithm)
 └── prod-asia/trade-service (v2, replicas: 2) ✓  # Kept 2!
 ```
 
-**Key concept**: Variants inherit from base via `--upstream-unit`. Upgrade propagates base changes while preserving variant customizations.
 
 ---
 
 ## Stage 5: Query and Filter Operations
+
+SQL-like WHERE clauses work across all spaces. Filters provide reusable query definitions.
 
 ```bash
 # Create a reusable filter for high-volume services
@@ -378,11 +382,12 @@ cub unit list --space "*" \
   --where "Data CONTAINS 'image:' AND Data CONTAINS ':v1'"
 ```
 
-**Key concept**: SQL-like WHERE clauses work across all spaces. Filters provide reusable query definitions.
 
 ---
 
-## Stage 6: Atomic Multi-Service Updates
+## Stage 6: Update Multiple Services atomically ("all or none")
+
+Changesets ensure related changes deploy together or not at all. Supports team coordination.
 
 ```bash
 # New market data format requires updating both services together
@@ -403,11 +408,12 @@ Changeset: market-data-v2
 Status: Applied atomically
 ```
 
-**Key concept**: Changesets ensure related changes deploy together or not at all. Supports team coordination.
 
 ---
 
-## Stage 7: Lateral Promotion for Emergency Changes
+## Stage 7: Lateral Promotion eg. for fast critical changes
+
+Lateral promotion enables emergency fixes to bypass normal promotion flow. Full revision history provides audit trail.
 
 ```bash
 # Normal flow: dev → staging → us → eu → asia
@@ -441,13 +447,13 @@ Emergency:                 eu → asia  (Bypass US)
 Backfill:                  us  (After market close)
 ```
 
-**Key concept**: Lateral promotion enables emergency fixes to bypass normal promotion flow. Full revision history provides audit trail.
 
 ---
 
 ## Complete System Structure
 
-Variant hierarchy (visualize with `cub unit tree`):
+Use `cub unit tree` to visualize the config Variant Hierarchy:
+
 ```
 NODE                  UNIT            SPACE
 └── traderx-base      trade-service   traderx-base
@@ -488,11 +494,14 @@ cub unit apply --space "*"                    # Deploy all
 - Updates preserve customizations and don't clobber or surprise
 - Bulk operations and other live ops at scale
 - Queries instead of hunting through config sprawl
-- Lateral promotions instead of chaining dev tools to promote changes 
+- Lateral promotions instead of chaining dev tools to promote changes
+- ConfigHub 'apps' can be long running in k8s connected to the config database
 
 ---
 
-## The Two Scripts
+## Scripts: Setup and Deployment
+
+Recall we are using two scripts.  Feel free to remix these in your own way.
 
 ### setup-structure
 ```bash
@@ -530,11 +539,24 @@ done
 cub unit apply --space "traderx-prod-*" --where "*"
 ```
 
+## Objectives
+
+After completing this tutorial, you should be able to:
+
+- Create ConfigHub spaces and units
+- Deploy configurations to Kubernetes
+- Manage multiple environments and regions
+- Use push-upgrade to update globally while preserving local changes
+- Query and fix configurations across regions with SQL WHERE clauses
+- Perform atomic multi-service updates
+- Handle emergency scenarios with lateral promotion
+
+
 ---
 
 ## Advanced ConfigHub Features (Not Covered)
 
-This tutorial covers ConfigHub basics. For production-grade features, see the full [TraderX implementation](https://github.com/monadic/traderx) or [acmetodo example](https://docs.confighub.com/howto/acmetodo/).
+This tutorial covered ConfigHub basics. For production-grade features, see the full [TraderX implementation](https://github.com/monadic/traderx).  We also have an [acmetodo example](https://docs.confighub.com/howto/acmetodo/).
 
 ### Features Demonstrated in This Tutorial ✅
 - **Changesets** - Atomic operations across multiple units (Stage 6)
@@ -634,14 +656,4 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed visual diagrams:
 
 ---
 
-## Learning Objectives
 
-After completing this tutorial, you should be able to:
-
-- Create ConfigHub spaces and units
-- Deploy configurations to Kubernetes
-- Manage multiple environments and regions
-- Use push-upgrade to update globally while preserving local changes
-- Query and fix configurations across regions with SQL WHERE clauses
-- Perform atomic multi-service updates
-- Handle emergency scenarios with lateral promotion
