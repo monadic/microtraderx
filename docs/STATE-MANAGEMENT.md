@@ -1,4 +1,4 @@
-# ConfigHub State Management in MicroTraderX
+# ConfigHub: Managing the MicroTraderX app
 
 ## Two-Script Pattern
 
@@ -30,21 +30,21 @@ This maps directly to ConfigHub's two-state model:
 
 ## Why Two Scripts?
 
-### Educational Clarity
-Separating setup from deployment makes it obvious that:
+### You control when changes deploy
+Separating setup from deployment makes it obvious:
 1. ConfigHub stores configuration (desired state)
 2. Kubernetes runs workloads (live state)
-3. You control when changes deploy
+... and you control the two.
 
-### Safe Experimentation
-You can:
+### Experimentation
+We invite you to try these features out and 'remix' them:
 - Run `./setup-structure` multiple times to refine configuration
 - Review changes in ConfigHub before deploying
 - Use `cub unit get` to inspect desired state
 - Deploy when ready with `./deploy`
 
-### Mirrors Production Pattern
-In production, you'd typically:
+### Production 
+In production you might...
 1. Update ConfigHub (via CI/CD, API, or CLI)
 2. Review/approve changes
 3. Deploy during maintenance window
@@ -76,7 +76,7 @@ cub unit apply --space "traderx-prod-*" --where "*"         # Deploy!
 ```
 Result: Base update propagated to all regions
 
-## Critical Insight: Updates Don't Auto-Deploy
+## Updates Don't Auto-Deploy
 
 ```bash
 # This only changes ConfigHub:
@@ -91,9 +91,9 @@ cub unit apply trade-service --space traderx-prod-us
 # Now pods update to 10 replicas
 ```
 
-## When Do Changes Deploy Automatically?
+## Can Changes Deploy Automatically?
 
-ConfigHub Workers can auto-apply, but only in specific scenarios:
+ConfigHub Workers can auto-apply.  In this example app:
 
 ### ✅ Auto-Applied:
 1. **First-time apply** - Worker sees new unit, auto-applies future changes
@@ -105,7 +105,9 @@ ConfigHub Workers can auto-apply, but only in specific scenarios:
 2. **Patch operations** - ConfigHub updated, not Kubernetes
 3. **Configuration changes** - Need explicit apply
 
-## Best Practices for Tutorial
+Let us know if you have questions or comemtns on this topic.
+
+## Tutorial Advice
 
 ### Always Run Both Scripts Together
 ```bash
@@ -169,24 +171,8 @@ setup-structure (update ConfigHub) → deploy (apply to K8s)
 - Review before applying
 - Intentional, not automatic
 
-## Why This Matters
+ConfigHub's motivation is to help users pick best practices and patterns, just like GitOps tools now do, but in a very explicit way.  Because you know exactly when changes deploy, you can get greater control and avoid certain surprises.  You can also test eg.: update ConfigHub, test locally, then deploy.  In produciton you can review changes before applying.  You can't accidentally update production. 
 
-Understanding that `cub unit update` does NOT deploy is critical:
-
-- **Avoids Surprises**: You know exactly when changes deploy
-- **Enables Testing**: Update ConfigHub, test locally, then deploy
-- **Supports Approval**: Review changes before applying
-- **Prevents Accidents**: Can't accidentally update production
-
-## Learning Objectives
-
-After understanding this pattern, you should:
-
-1. Know that ConfigHub stores desired state separately from live state
-2. Understand that updates require explicit apply
-3. Use `./setup-structure` to update ConfigHub
-4. Use `./deploy` to apply to Kubernetes
-5. Verify state consistency when troubleshooting
 
 ## See Also
 
@@ -196,4 +182,3 @@ After understanding this pattern, you should:
 
 ---
 
-**Key Takeaway**: In MicroTraderX, `./setup-structure` prepares configuration, `./deploy` executes it. Both are required for changes to reach Kubernetes.
