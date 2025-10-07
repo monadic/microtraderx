@@ -2,6 +2,8 @@
 
 **Purpose**: Document potential advanced features that could be added to MicroTraderX tutorial in future versions
 
+INCLUDES AI SPECULATIONS 
+
 ---
 
 ## Overview
