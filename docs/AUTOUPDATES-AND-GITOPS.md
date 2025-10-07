@@ -1,28 +1,26 @@
-# ConfigHub Auto-Updates and GitOps: Critical Lessons
+# Notes on ConfigHub Auto-Updates and GitOps
 
 ## Executive Summary
 
-ConfigHub is **NOT GitOps** (by default). Understanding the difference between updating ConfigHub state and deploying to infrastructure is critical for all examples and tutorials.
+ConfigHub is by default more flexible than traditional GitOps. 
 
-## The Problem We Discovered
+## Example
 
-During TraderX deployment, we ran:
+During TraderX deployment, we can run:
 
 ```bash
 cub unit update account-service-deployment config.yaml --space dev
 ```
 
-And expected Kubernetes pods to restart with new configuration. **They didn't.**
-
-The pods continued running with old configuration until we explicitly ran:
+In this case Kubernetes pods will NOT restart with the new configuration. The pods continued running with old configuration until we explicitly ran:
 
 ```bash
 cub unit apply account-service-deployment --space dev
 ```
 
-## Why This Happens: ConfigHub's Two-State Model
+## Why 
 
-### ConfigHub Maintains TWO States:
+### ConfigHub links TWO states:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -43,7 +41,8 @@ cub unit apply account-service-deployment --space dev
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Key Principle**: Updating desired state does **NOT** automatically update live state.
+In default ConfigHub, updating desired state does not automatically update live state.  
+
 
 ## ConfigHub vs GitOps Comparison
 
