@@ -2,7 +2,7 @@
 
 ## Overview
 
-MicroTraderX uses a two-script pattern that separates ConfigHub state management from Kubernetes deployment. Understanding this pattern is critical for successful deployments.
+The MicroTraderX tutorial example uses a two-script pattern that separates ConfigHub state management from Kubernetes deployment.  
 
 ## Two-Script Pattern
 
@@ -11,7 +11,7 @@ MicroTraderX uses a two-script pattern that separates ConfigHub state management
 ./deploy           →  Applies desired state to Kubernetes
 ```
 
-This maps directly to ConfigHub's two-state model:
+This maps directly to this model:
 
 ```
 ┌────────────────────────────────────────────────┐
