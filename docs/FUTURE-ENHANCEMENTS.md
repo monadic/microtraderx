@@ -246,6 +246,44 @@ env:
 
 ---
 
+## Additional Enhancement Opportunities
+
+**Note from reviews**: The following enhancements would improve operational clarity and real-world applicability:
+
+### 1. DevOps Apps as Extensions
+- Expand [MODULAR-APPS.md](../MODULAR-APPS.md) with more examples
+- Show cost-optimizer and drift-detector patterns
+- Demonstrate how apps discover and operate on ConfigHub-managed infrastructure
+- Link to [devops-examples repository](https://github.com/monadic/devops-examples)
+
+### 2. GitOps Integration Showcase
+- **Helm integration**: Show ConfigHub as Helm values source
+- **Flux/ArgoCD**: Demonstrate ConfigHub → Git → Flux/Argo workflow
+- **Enterprise Mode**: ConfigHub commits to Git for audit trail
+- Compare push vs pull deployment models
+
+### 3. Drift Detection and Rollback Examples
+- Show `cub unit get-live-state` for drift detection
+- Demonstrate `diff` between desired and live state
+- Add rollback examples using `cub revision list` and `cub revision apply`
+- Include audit trail queries: who changed what when
+
+### 4. kubectl Equivalents Guide
+- Side-by-side comparison of ConfigHub vs kubectl commands
+- Help users translate existing kubectl workflows
+- Show when to use which tool
+
+### 5. Worker Architecture and Security Model
+- Explain where workers run (Kubernetes pods)
+- Document RBAC permissions required
+- Show how to inspect worker logs
+- Detail ConfigHub ↔ Worker communication model
+- Security best practices for production deployments
+
+**Status**: These enhancements address operational concerns raised in technical reviews and would bridge the gap between tutorial and production usage.
+
+---
+
 ## See Also
 
 - [TraderX Production Implementation](https://github.com/monadic/traderx) - Full FINOS app with all features
