@@ -183,7 +183,7 @@ cub unit update --space "*" \
   --patch '{"spec":{"replicas":3}}'
 
 # INSERT: Create new units
-cub unit create trade-service --space prod --data service.yaml
+cub unit create --space prod trade-service service.yaml
 
 # DELETE: Remove units
 cub unit delete trade-service --space dev
@@ -238,7 +238,7 @@ Spaces contain units. Workers deploy them to Kubernetes.
 ```bash
 # setup-structure
 cub space create traderx
-cub unit create reference-data --space traderx --data reference-data.yaml
+cub unit create --space traderx reference-data reference-data.yaml
 
 # deploy
 cub worker install worker --space traderx --wait
@@ -262,7 +262,8 @@ Each environment can be a separate space. Copy operations promote configurations
 # setup-structure
 for env in dev staging prod; do
   cub space create traderx-$env
-  cub unit copy reference-data --from traderx --to traderx-$env
+  cub unit create --space traderx-$env reference-data \
+    --upstream-space traderx --upstream-unit reference-data
 done
 
 # deploy (just prod)
@@ -294,20 +295,18 @@ Deploy three regions with region-specific scaling using inheritance. Each region
 # setup-structure
 # Create base with shared configuration
 cub space create traderx-base
-cub unit create reference-data --space traderx-base --data reference-data.yaml
-cub unit create trade-service --space traderx-base --data trade-service.yaml
+cub unit create --space traderx-base reference-data reference-data.yaml
+cub unit create --space traderx-base trade-service trade-service.yaml
 
 # Create regions with upstream relationships (not copy!)
 for region in us eu asia; do
   cub space create traderx-prod-$region
 
   # Link to base using --upstream-unit
-  cub unit create reference-data \
-    --space traderx-prod-$region \
+  cub unit create --space traderx-prod-$region reference-data \
     --upstream-unit traderx-base/reference-data
 
-  cub unit create trade-service \
-    --space traderx-prod-$region \
+  cub unit create --space traderx-prod-$region trade-service \
     --upstream-unit traderx-base/trade-service
 done
 
@@ -371,11 +370,11 @@ ConfigHub uses a two-phase update model:
 ```bash
 # Create base + regions with inheritance
 cub space create traderx-base
-cub unit create trade-service --space traderx-base \
-  --data trade-service-v1.yaml
+cub unit create --space traderx-base trade-service \
+  trade-service-v1.yaml
 
 for region in us eu asia; do
-  cub unit create trade-service --space traderx-prod-$region \
+  cub unit create --space traderx-prod-$region trade-service \
     --upstream-unit traderx-base/trade-service  # Creates variants
 done
 
@@ -387,8 +386,8 @@ done
 cub unit tree --node=space trade-service --space "*"
 
 # Critical update: New trade algorithm v2
-cub unit update trade-service --space traderx-base \
-  --data trade-service-v2.yaml  # New algorithm!
+cub unit update --space traderx-base trade-service \
+  trade-service-v2.yaml  # New algorithm!
 
 # Check which variants need upgrading
 cub unit tree --node=space trade-service --space "*" \
@@ -483,8 +482,7 @@ cub unit update trade-service --space prod-us \
   --patch '{"spec":{"replicas":3}}'
 
 # ✅ Function (type-safe, self-documenting)
-cub run set-replicas --replicas 3 \
-  --space prod-us --unit trade-service
+cub run set-replicas 3 --unit trade-service --space prod-us
 ```
 
 **Why functions are better:**
@@ -496,15 +494,15 @@ cub run set-replicas --replicas 3 \
 **Common functions:**
 ```bash
 # Scale replicas
-cub run set-replicas --replicas 5 --unit trade-service --space prod-eu
+cub run set-replicas 5 --unit trade-service --space prod-eu
 
 # Update container image
 cub run set-image-reference --container-name api --image-reference :v2.0 \
   --unit trade-service --space prod-us
 
-# Set environment variable
-cub run set-env-var --env-var CIRCUIT_BREAKER=true \
-  --unit trade-service --space prod-eu
+# Set environment variable (using function do)
+cub function do --space prod-eu --unit trade-service \
+  set-env-var trade-service CIRCUIT_BREAKER true
 
 # Set resource limits (requests and limits)
 cub run set-container-resources --container-name api \
@@ -515,8 +513,8 @@ cub run set-container-resources --container-name api \
 Functions work with WHERE clauses too:
 ```bash
 # Scale all prod regions at once using function
-cub run set-replicas --replicas 3 \
-  --space "*" --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'"
+cub run set-replicas 3 \
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" --space "*"
 ```
 
 **When to use what:**
@@ -560,8 +558,8 @@ Lateral promotion enables emergency fixes to bypass normal promotion flow. Full 
 # EU discovered critical trading bug at market open
 
 # Emergency fix directly in EU
-cub run set-env-var --env-var CIRCUIT_BREAKER=true \
-  --unit trade-service --space traderx-prod-eu
+cub function do --space traderx-prod-eu --unit trade-service \
+  set-env-var trade-service CIRCUIT_BREAKER true
 
 # Check revision history - WHO did WHAT and WHEN?
 cub revision list trade-service --space traderx-prod-eu --limit 3
@@ -648,15 +646,15 @@ Recall we are using two scripts.  Feel free to remix these in your own way.
 #!/bin/bash
 # Create base space for shared configs
 cub space create traderx-base
-cub unit create reference-data --space traderx-base --data reference-data.yaml
-cub unit create trade-service --space traderx-base --data trade-service.yaml
+cub unit create --space traderx-base reference-data reference-data.yaml
+cub unit create --space traderx-base trade-service trade-service.yaml
 
 # Create regions with inheritance
 for region in us eu asia; do
   cub space create traderx-prod-$region
-  cub unit create reference-data --space traderx-prod-$region \
+  cub unit create --space traderx-prod-$region reference-data \
     --upstream-unit traderx-base/reference-data
-  cub unit create trade-service --space traderx-prod-$region \
+  cub unit create --space traderx-prod-$region trade-service \
     --upstream-unit traderx-base/trade-service
 done
 
