@@ -29,7 +29,7 @@ We recommend you start with MicroTraderX to understand ConfigHub basics, then ex
 ### Additional Resources
 - **[TESTING.md](TESTING.md)** - Testing guide and validation
 - **[DOCS-MAP.md](DOCS-MAP.md)** - Documentation index and topic/persona navigation
-- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with "devops" apps
+- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with "devops" apps 
 
 ---
 
@@ -757,6 +757,7 @@ cub set add critical-services trade-service reference-data
 - **Cross-Space Inheritance** - Share configurations across space boundaries
 - **Revision Management** - Complete change history with rollback
 - **SDK and Integrations** - Go SDK, Helm, and more
+- **[MODULAR-APPS.md](MODULAR-APPS.md)** - Extend MicroTraderX with "devops" apps 
 
 See [docs.confighub.com](https://docs.confighub.com) for comprehensive documentation.
 
