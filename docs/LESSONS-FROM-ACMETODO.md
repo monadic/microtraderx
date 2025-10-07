@@ -116,7 +116,7 @@ env:
 - Explains update vs apply clearly
 
 **Lesson**: Users need to understand ConfigHub is NOT GitOps
-**Decision for MicroTraderX**: **Already have** docs/STATE-MANAGEMENT.md ✅
+**Decision for MicroTraderX**: **Already have** docs/APP-DEPLOYMENT.md ✅
 
 ---
 
