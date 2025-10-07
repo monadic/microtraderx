@@ -177,7 +177,7 @@ ConfigHub's motivation is to help users pick best practices and patterns, just l
 ## See Also
 
 - [AUTOUPDATES-AND-GITOPS.md](AUTOUPDATES-AND-GITOPS.md) - Comprehensive explanation of ConfigHub's state model
-- [QUICKSTART.md](../QUICKSTART.md) - Running the tutorial
+- [QUICK-REFERENCE.md](../QUICK-REFERENCE.md) - Quick commands and troubleshooting
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture
 
 ---

@@ -11,7 +11,7 @@ microtraderx/
 ├── README.md              ⭐ START HERE - The essence
 ├── VISUAL-GUIDE.md        📈 Stage-by-stage progression
 ├── ARCHITECTURE.md        📊 System architecture diagrams
-├── QUICKSTART.md          🚀 Get started quickly
+├── QUICK-REFERENCE.md     ⚡ Commands, troubleshooting, cleanup
 ├── TESTING.md             🧪 Testing and validation
 ├── TEST_REPORT.md         📋 Test results and coverage
 └── docs/
@@ -44,10 +44,10 @@ microtraderx/
    - Multi-cluster deployment
    - Emergency lateral promotion
 
-4. **QUICKSTART.md** (Optional) - Hands-on practice
-   - Run the stages yourself
-   - Troubleshoot issues
-   - Validate your setup
+4. **QUICK-REFERENCE.md** (When you need commands) - Practical reference
+   - Quick commands for running stages
+   - Troubleshooting diagnostics
+   - Cleanup procedures
 
 5. **docs/APP-DEPLOYMENT.md** (If confused about setup vs deploy)
    - Two-script pattern explained
@@ -64,12 +64,14 @@ microtraderx/
 
 **Goal**: Get it running and understand how it works
 
-1. **QUICKSTART.md** - Get started
-   - Prerequisites
-   - Run all stages or jump to any stage
-   - Basic troubleshooting
+1. **README.md** - Understand the concepts
+   - ConfigHub patterns and stages
+   - Core principles and examples
 
-2. **README.md** - Understand the patterns
+2. **QUICK-REFERENCE.md** - Get commands
+   - Prerequisites and setup
+   - Run all stages or jump to any stage
+   - Troubleshooting and diagnostics
    - Two-script pattern
    - Push-upgrade
    - Regional customization
@@ -123,10 +125,10 @@ microtraderx/
    - Coverage
    - Known issues
 
-3. **QUICKSTART.md** - Run tests yourself
-   - Setup prerequisites
-   - Run validation
-   - Troubleshoot failures
+3. **QUICK-REFERENCE.md** - Diagnostic commands
+   - Check ConfigHub structure
+   - Check Kubernetes deployments
+   - Troubleshooting guide
 
 ---
 
@@ -196,14 +198,14 @@ microtraderx/
 - ✓ Emergency patterns
 - ✗ Stage-by-stage progression
 
-### QUICKSTART.md
-**Best for**: Getting started quickly
-- ✓ Prerequisites
-- ✓ How to run
-- ✓ Troubleshooting
-- ✓ Cleanup
-- ✗ Concept explanations
-- ✗ Detailed diagrams
+### QUICK-REFERENCE.md
+**Best for**: Quick commands and troubleshooting
+- ✓ Stage overview with time estimates
+- ✓ Running commands
+- ✓ Troubleshooting diagnostics
+- ✓ Cleanup procedures
+- ✗ Concept explanations (see README)
+- ✗ Detailed diagrams (see VISUAL-GUIDE)
 
 ### TESTING.md
 **Best for**: Validation and testing
@@ -268,19 +270,19 @@ microtraderx/
 ### Quick Introduction
 1. README.md - Get the essence
 2. VISUAL-GUIDE.md - See stages 1, 3, 4, 7
-3. QUICKSTART.md - Run stage 4
+3. QUICK-REFERENCE.md - Run stage 4
 
 ### Comprehensive Understanding
 1. README.md - Overview
 2. VISUAL-GUIDE.md - All stages
 3. ARCHITECTURE.md - Architecture
-4. QUICKSTART.md - Hands-on
+4. QUICK-REFERENCE.md - Hands-on practice
 
 ### Complete Mastery
 1. README.md - Study all stages
 2. VISUAL-GUIDE.md - All stages with diagrams
 3. ARCHITECTURE.md - Complete architecture
-4. QUICKSTART.md - Run all stages
+4. QUICK-REFERENCE.md - Run all stages
 5. TESTING.md - Validate
 6. Experiment - Modify and test
 
@@ -293,7 +295,7 @@ microtraderx/
 | README.md | 11 KB |
 | VISUAL-GUIDE.md | 48 KB |
 | ARCHITECTURE.md | 35 KB |
-| QUICKSTART.md | 4 KB |
+| QUICK-REFERENCE.md | 5 KB |
 | TESTING.md | 8 KB |
 | TEST_REPORT.md | 13 KB |
 
@@ -308,7 +310,7 @@ When updating docs, maintain this structure:
 - **README.md**: Keep the essence, the "why", the 10-minute overview
 - **VISUAL-GUIDE.md**: Add diagrams for each stage, show progression
 - **ARCHITECTURE.md**: Deep-dive technical details, system design
-- **QUICKSTART.md**: Practical "how-to", minimal explanation
+- **QUICK-REFERENCE.md**: Quick commands, troubleshooting, cleanup
 - **TESTING.md**: Validation approach, test cases
 - **This file**: Update when adding new docs or reorganizing
 
@@ -319,7 +321,7 @@ When updating docs, maintain this structure:
 | Question | Best Doc |
 |----------|----------|
 | What is ConfigHub? | README.md Stage 1 |
-| How do I run this? | QUICKSTART.md |
+| How do I run this? | QUICK-REFERENCE.md |
 | What's the architecture? | ARCHITECTURE.md |
 | How does push-upgrade work? | VISUAL-GUIDE.md Stage 4 |
 | How do regions scale? | VISUAL-GUIDE.md Stage 3 |

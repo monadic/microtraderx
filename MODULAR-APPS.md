@@ -272,4 +272,4 @@ Implementation steps:
 - [README.md](README.md) - Core tutorial
 - [VISUAL-GUIDE.md](VISUAL-GUIDE.md) - Visual progression
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Technical details
-- [QUICKSTART.md](QUICKSTART.md) - Implementation guide
+- [QUICK-REFERENCE.md](QUICK-REFERENCE.md) - Quick commands and setup

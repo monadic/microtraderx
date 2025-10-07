@@ -22,7 +22,7 @@ We recommend you start with MicroTraderX to understand ConfigHub basics, then ex
 ## 📚 Documentation
 
 ### Getting Started
-- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide and troubleshooting
+- **[QUICK-REFERENCE.md](QUICK-REFERENCE.md)** - Quick commands, troubleshooting, and cleanup
 - **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - ASCII diagrams for each stage
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, inheritance flow, and deployment patterns
 
@@ -133,7 +133,7 @@ See `./bulk-operations help` for more examples.
 ```
 microtraderx/
 ├── README.md                # This tutorial guide
-├── QUICKSTART.md            # Quick start guide
+├── QUICK-REFERENCE.md       # Quick commands and troubleshooting
 ├── TESTING.md               # Testing guide
 ├── setup-structure          # Main setup script
 ├── deploy                   # Main deploy script
@@ -659,7 +659,7 @@ See [docs.confighub.com](https://docs.confighub.com) for comprehensive documenta
 1. Read this README for overview
 2. Review [VISUAL-GUIDE.md](VISUAL-GUIDE.md) to see each stage
 3. Study [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
-4. Run the stages yourself with [QUICKSTART.md](QUICKSTART.md)
+4. Run the stages yourself with [QUICK-REFERENCE.md](QUICK-REFERENCE.md)
 
 ### Visual Progression
 See [VISUAL-GUIDE.md](VISUAL-GUIDE.md) for command examples and ASCII before/after diagrams:

@@ -363,7 +363,7 @@ ConfigHub:  cub unit update → (STOPS HERE until manual apply)
 
 ## See Also
 
-- [QUICKSTART.md](../QUICKSTART.md) - Running the tutorial
+- [QUICK-REFERENCE.md](../QUICK-REFERENCE.md) - Quick commands and troubleshooting
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture
 - [TESTING.md](../TESTING.md) - Testing guide and validation
 
