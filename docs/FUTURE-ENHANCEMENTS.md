@@ -1,8 +1,12 @@
+TODO: align this content with the main confighub and sdk docs, based on the purpose of this page which is documenting potential advanced ConfigHub features and enhancements that could be added to the microtraderx tutorial in future versions.
+
+---
+
 # Future Enhancements for MicroTraderX
 
 **Purpose**: Document potential advanced features that could be added to MicroTraderX tutorial in future versions
 
-INCLUDES AI SPECULATIONS 
+INCLUDES AI SPECULATIONS
 
 ---
 

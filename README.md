@@ -479,28 +479,30 @@ cub run set-replicas 3 --unit trade-service --space prod-us
 
 **Common functions:**
 ```bash
-# Scale replicas
-cub run set-replicas 5 --unit trade-service --space prod-eu
-
 # Update container image
 cub run set-image-reference --container-name api --image-reference :v2.0 \
   --unit trade-service --space prod-us
 
-# Set environment variable (using function do)
-cub function do --space prod-eu --unit trade-service \
-  set-env-var trade-service CIRCUIT_BREAKER true
+# Set environment variable
+cub run set-env-var --container-name api --env-var CIRCUIT_BREAKER --env-value true \
+  --unit trade-service --space prod-eu
 
-# Set resource limits (requests and limits)
+# Set resource limits
 cub run set-container-resources --container-name api \
-  --operation all --cpu 250m --memory 2Gi --limit-factor 2 \
+  --cpu 250m --memory 2Gi \
   --unit trade-service --space prod-asia
 ```
 
-Functions work with WHERE clauses too:
+For operations without functions, use patches:
 ```bash
-# Scale all prod regions at once using function
-cub run set-replicas 3 \
-  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" --space "*"
+# Scale replicas (use patch, not function)
+cub unit update trade-service --space prod-us \
+  --patch '{"spec":{"replicas":3}}'
+
+# Patches work with WHERE clauses too
+cub unit update --space "*" \
+  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
+  --patch '{"spec":{"replicas":3}}'
 ```
 
 **When to use what:**
@@ -544,8 +546,9 @@ Lateral promotion enables emergency fixes to bypass normal promotion flow. Full 
 # EU discovered critical trading bug at market open
 
 # Emergency fix directly in EU
-cub function do --space traderx-prod-eu --unit trade-service \
-  set-env-var trade-service CIRCUIT_BREAKER true
+cub run set-env-var --container-name trade-service \
+  --env-var CIRCUIT_BREAKER --env-value true \
+  --unit trade-service --space traderx-prod-eu
 
 # Check revision history - WHO did WHAT and WHEN?
 cub revision list trade-service --space traderx-prod-eu --limit 3
@@ -696,8 +699,10 @@ This tutorial covered ConfigHub basics. For production-grade features, see the f
 **1. Functions** - Reusable, safe operations (vs manual patches)
 ```bash
 # Safer than manual JSON patches
-cub function do set-image-reference web ":v2" --unit todo-app --space prod
-cub function do set-requested-memory api 16Gi --unit todo-app --space prod
+cub run set-image-reference --container-name web --image-reference :v2 \
+  --unit todo-app --space prod
+cub run set-container-resources --container-name api --memory 16Gi \
+  --unit todo-app --space prod
 ```
 
 **2. Triggers** - Automatic validation before apply

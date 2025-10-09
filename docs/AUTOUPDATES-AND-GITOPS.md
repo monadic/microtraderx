@@ -1,3 +1,7 @@
+TODO: align this content with the main confighub and sdk docs, based on the purpose of this page which is documenting critical lessons about ConfigHub auto-updates, GitOps integration patterns, and the relationship between configuration and deployment state.
+
+---
+
 # Notes on ConfigHub Auto-Updates and GitOps
 
 ## Executive Summary

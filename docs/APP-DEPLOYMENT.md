@@ -1,3 +1,7 @@
+TODO: align this content with the main confighub and sdk docs, based on the purpose of this page which is explaining the app deployment pattern and the separation between setup-structure and deploy scripts in microtraderx.
+
+---
+
 # MicroTraderX App Deployment
 
 ## Overview

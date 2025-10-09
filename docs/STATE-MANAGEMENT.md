@@ -1,3 +1,7 @@
+TODO: align this content with the main confighub and sdk docs, based on the purpose of this page which is explaining ConfigHub state management and the two-script pattern for managing the microtraderx application.
+
+---
+
 # ConfigHub: Managing the MicroTraderX app
 
 ## Two-Script Pattern
