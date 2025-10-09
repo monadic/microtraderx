@@ -10,8 +10,8 @@ Learn ConfigHub fundamentals by building a simplified trading platform with mult
 - Option to showcase bulk ops and other extended capability
 
 
-**Production: [TraderX](https://github.com/monadic/traderx)** 
-- The [TraderX reference application from FINOS](https://github.com/finos/traderX) ported to ConfigHub
+**Production: TraderX** 
+- The [TraderX reference application from FINOS](https://github.com/finos/traderX) ported to [ConfigHub TraderX](https://github.com/monadic/traderx)
 - Extended features: bulk operations, links, filters
 - Dependency management, real world deployment patterns, monitoring and validation
 
