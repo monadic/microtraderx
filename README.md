@@ -2,6 +2,8 @@
 
 Learn ConfigHub fundamentals by building a simplified trading platform with multi-region deployment.
 
+TODO: create Stage 8 to show Links properly; and then update extension apps.  Check visual diagrams are still correct.
+
 ## 📚 Tutorial vs Production
 
 **Tutorial: MicroTraderX** 
