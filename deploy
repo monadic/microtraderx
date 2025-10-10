@@ -198,7 +198,7 @@ case $STAGE in
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
-      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "Slug != ''"
     done
 
     echo ""
@@ -262,7 +262,7 @@ case $STAGE in
 
       # Set targets and apply all units
       cub unit set-target worker-$env --space ${PREFIX}-traderx-$env --where "Slug != ''" || true
-      cub unit apply --space ${PREFIX}-traderx-$env --where "*"
+      cub unit apply --space ${PREFIX}-traderx-$env --where "Slug != ''"
     done
 
     # Deploy all regions
@@ -280,7 +280,7 @@ case $STAGE in
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
-      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "Slug != ''"
     done
 
     echo -e "${GREEN}✓ Complete system deployed!${NC}"
