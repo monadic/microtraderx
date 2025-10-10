@@ -1,6 +1,6 @@
 # MicroTraderX Documentation Map
 
-Quick reference guide to all documentation files.
+Quick reference guide to all documentation files.  This page built by Claude based on docs review.
 
 ---
 
