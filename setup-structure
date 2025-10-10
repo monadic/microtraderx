@@ -95,33 +95,26 @@ case $STAGE in
         --quiet || true
 
       # Link app units to namespace (resolves confighubplaceholder)
-      cub link create \
-        --space ${PREFIX}-traderx-prod-$region \
-        --from reference-data \
-        --to ns-$region \
-        --to-space ${PREFIX}-traderx-infra || true
+      # Syntax: cub link create --space <space> --json <link-name> <from-unit> <to-unit> [<to-space>]
+      cub link create --space ${PREFIX}-traderx-prod-$region \
+        --json app-to-ns-ref reference-data ns-$region ${PREFIX}-traderx-infra || true
 
-      cub link create \
-        --space ${PREFIX}-traderx-prod-$region \
-        --from trade-service \
-        --to ns-$region \
-        --to-space ${PREFIX}-traderx-infra || true
+      cub link create --space ${PREFIX}-traderx-prod-$region \
+        --json app-to-ns-trade trade-service ns-$region ${PREFIX}-traderx-infra || true
 
-      # Link trade-service to reference-data (service dependency)
-      cub link create \
-        --space ${PREFIX}-traderx-prod-$region \
-        --from trade-service \
-        --to reference-data || true
+      # Link trade-service to reference-data (service dependency - same space)
+      cub link create --space ${PREFIX}-traderx-prod-$region \
+        --json trade-to-ref trade-service reference-data || true
     done
 
     # Regional customizations based on trading volume
     echo "  Customizing regional scale..."
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-us \
-      --patch '{"spec":{"replicas":3}}' || true  # NYSE hours
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-eu \
-      --patch '{"spec":{"replicas":5}}' || true  # Peak trading
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
-      --patch '{"spec":{"replicas":2}}' || true  # Overnight
+    echo '{"spec":{"replicas":3}}' | cub unit update trade-service --space ${PREFIX}-traderx-prod-us \
+      --patch --from-stdin || true  # NYSE hours
+    echo '{"spec":{"replicas":5}}' | cub unit update trade-service --space ${PREFIX}-traderx-prod-eu \
+      --patch --from-stdin || true  # Peak trading
+    echo '{"spec":{"replicas":2}}' | cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
+      --patch --from-stdin || true  # Overnight
 
     echo -e "${GREEN}✓ Created base + 3 regions with links${NC}"
     echo ""
