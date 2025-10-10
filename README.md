@@ -268,13 +268,21 @@ traderx-prod/
 
 ---
 
-## Stage 3: Inheritance and Regional Customization
+## Stage 3: Regional Deployment with Links
 
-Deploy three regions with region-specific scaling using inheritance. Each region inherits from base via `--upstream-unit`, creating variants with shared config but custom replicas.
+Deploy three regions with infrastructure separation, service dependencies, and namespace isolation.
 
-**Why inheritance matters:**
+**New concept: Links** (brief introduction - detailed in Stage 8)
+
+Links express relationships between units:
+- **Infrastructure links**: App units → namespace units (resolves `confighubplaceholder`)
+- **Service dependencies**: trade-service → reference-data (deployment ordering)
+
+**Why inheritance + links matter:**
 - Shared configuration in base → all regions get same app version
 - Regional customizations (replicas) stay independent
+- Each region deploys to its own namespace (isolation)
+- Services start in correct order (dependencies)
 - Foundation for push-upgrade in Stage 4
 
 ```bash
@@ -284,52 +292,101 @@ cub space create traderx-base
 cub unit create --space traderx-base reference-data reference-data.yaml
 cub unit create --space traderx-base trade-service trade-service.yaml
 
-# Create regions with upstream relationships (not copy!)
+# Create infrastructure space for namespaces
+cub space create traderx-infra
+cub unit create --space traderx-infra ns-base namespace-base.yaml
+
+# Create regions with upstream relationships and links
 for region in us eu asia; do
   cub space create traderx-prod-$region
 
-  # Link to base using --upstream-unit
-  cub unit create --space traderx-prod-$region reference-data \
-    --upstream-unit traderx-base/reference-data
+  # Create app units (inherit from base)
+  cub unit create reference-data \
+    --space traderx-prod-$region \
+    --upstream-space traderx-base \
+    --upstream-unit reference-data
 
-  cub unit create --space traderx-prod-$region trade-service \
-    --upstream-unit traderx-base/trade-service
+  cub unit create trade-service \
+    --space traderx-prod-$region \
+    --upstream-space traderx-base \
+    --upstream-unit trade-service
+
+  # Create namespace for this region
+  cub unit create ns-$region \
+    --space traderx-infra \
+    --upstream-unit ns-base
+
+  # Customize namespace name
+  cub run set-string-path \
+    --resource-type v1/Namespace \
+    --path metadata.name \
+    --attribute-value traderx-prod-$region \
+    --unit ns-$region --space traderx-infra
+
+  # Link apps to namespace (resolves confighubplaceholder)
+  cub link create --space traderx-prod-$region \
+    --from reference-data --to ns-$region --to-space traderx-infra
+
+  cub link create --space traderx-prod-$region \
+    --from trade-service --to ns-$region --to-space traderx-infra
+
+  # Link service dependency (trade-service needs reference-data)
+  cub link create --space traderx-prod-$region \
+    --from trade-service --to reference-data
 done
 
 # Customize per region based on trading volume
 cub unit update trade-service --space traderx-prod-us \
-  --patch '{"replicas": 3}'    # NYSE hours = normal volume
+  --patch '{"spec":{"replicas":3}}'    # NYSE hours
 
 cub unit update trade-service --space traderx-prod-eu \
-  --patch '{"replicas": 5}'    # London + Frankfurt = high volume
+  --patch '{"spec":{"replicas":5}}'    # Peak trading
 
 cub unit update trade-service --space traderx-prod-asia \
-  --patch '{"replicas": 2}'    # Tokyo overnight = low volume
+  --patch '{"spec":{"replicas":2}}'    # Overnight
 
-# deploy all regions
+# deploy
+# First deploy namespaces (infrastructure)
+cub unit apply --space traderx-infra --where "*"
+
+# Then deploy apps (links resolved, proper namespaces)
 for region in us eu asia; do
   cub unit apply --space traderx-prod-$region --where "*"
 done
 ```
 
-Structure shows inheritance relationships:
+Structure shows relationships:
 ```
-traderx-base/
-├── reference-data (base config)
-└── trade-service (base config)
-    ↓ upstream relationships
-traderx-prod-us/
-├── reference-data (→base)
-└── trade-service (→base, replicas: 3) ✓  # NYSE hours
+traderx-base/                  # Shared app config
+├── reference-data
+└── trade-service
+    ↓ upstream inheritance
 
-traderx-prod-eu/
-├── reference-data (→base)
-└── trade-service (→base, replicas: 5) ✓  # Peak trading!
+traderx-infra/                 # Infrastructure
+├── ns-us                      # Namespace for US
+├── ns-eu                      # Namespace for EU
+└── ns-asia                    # Namespace for Asia
+    ↑ linked via Links
 
-traderx-prod-asia/
-├── reference-data (→base)
-└── trade-service (→base, replicas: 2) ✓  # Overnight trading
+traderx-prod-us/               # US region
+├── reference-data (→base, →ns-us)
+└── trade-service (→base, →ns-us, →reference-data, replicas:3)
+    Deploys to: traderx-prod-us namespace
+
+traderx-prod-eu/               # EU region
+├── reference-data (→base, →ns-eu)
+└── trade-service (→base, →ns-eu, →reference-data, replicas:5)
+    Deploys to: traderx-prod-eu namespace
+
+traderx-prod-asia/             # Asia region
+├── reference-data (→base, →ns-asia)
+└── trade-service (→base, →ns-asia, →reference-data, replicas:2)
+    Deploys to: traderx-prod-asia namespace
 ```
+
+**Result**: Each region isolated in its own namespace, services start in correct order.
+
+*Full Links explanation with advanced patterns in Stage 8*
 
 
 ---

@@ -42,35 +42,76 @@ case $STAGE in
     for env in dev staging prod; do
       echo "  Creating ${PREFIX}-traderx-$env..."
       cub space create ${PREFIX}-traderx-$env || true
-      cub unit copy reference-data --from ${PREFIX}-traderx --to ${PREFIX}-traderx-$env || true
+      # Create unit with upstream link (inheritance pattern)
+      cub unit create reference-data \
+        --space ${PREFIX}-traderx-$env \
+        --upstream-space ${PREFIX}-traderx \
+        --upstream-unit reference-data || true
     done
     echo -e "${GREEN}✓ Created 3 environments (dev, staging, prod)${NC}"
     ;;
 
   3)
-    echo "Stage 3: Three Regions with Inheritance"
+    echo "Stage 3: Three Regions with Links"
+
     # Create base space for shared config
     cub space create ${PREFIX}-traderx-base || true
     cub unit create --space ${PREFIX}-traderx-base reference-data k8s/reference-data.yaml || true
     cub unit create --space ${PREFIX}-traderx-base trade-service k8s/trade-service.yaml || true
 
-    # Create regions with upstream relationships
+    # Create infrastructure space for namespaces
+    cub space create ${PREFIX}-traderx-infra || true
+    cub unit create --space ${PREFIX}-traderx-infra ns-base k8s/namespace-base.yaml || true
+
+    # Create regions with upstream relationships and links
     for region in us eu asia; do
-      echo "  Creating ${PREFIX}-traderx-prod-$region with inheritance..."
+      echo "  Creating ${PREFIX}-traderx-prod-$region with inheritance and links..."
       cub space create ${PREFIX}-traderx-prod-$region || true
 
-      # Create units with upstream links (not copy!)
+      # Create app units (inherit from base)
       cub unit create reference-data \
         --space ${PREFIX}-traderx-prod-$region \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit reference-data \
-        --data k8s/reference-data.yaml || true
+        --upstream-unit reference-data || true
 
       cub unit create trade-service \
         --space ${PREFIX}-traderx-prod-$region \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit trade-service \
-        --data k8s/trade-service.yaml || true
+        --upstream-unit trade-service || true
+
+      # Create namespace unit for this region
+      cub unit create ns-$region \
+        --space ${PREFIX}-traderx-infra \
+        --upstream-space ${PREFIX}-traderx-infra \
+        --upstream-unit ns-base || true
+
+      # Customize namespace name
+      cub run set-string-path \
+        --resource-type v1/Namespace \
+        --path metadata.name \
+        --attribute-value ${PREFIX}-traderx-prod-$region \
+        --unit ns-$region \
+        --space ${PREFIX}-traderx-infra \
+        --quiet || true
+
+      # Link app units to namespace (resolves confighubplaceholder)
+      cub link create \
+        --space ${PREFIX}-traderx-prod-$region \
+        --from reference-data \
+        --to ns-$region \
+        --to-space ${PREFIX}-traderx-infra || true
+
+      cub link create \
+        --space ${PREFIX}-traderx-prod-$region \
+        --from trade-service \
+        --to ns-$region \
+        --to-space ${PREFIX}-traderx-infra || true
+
+      # Link trade-service to reference-data (service dependency)
+      cub link create \
+        --space ${PREFIX}-traderx-prod-$region \
+        --from trade-service \
+        --to reference-data || true
     done
 
     # Regional customizations based on trading volume
@@ -82,11 +123,18 @@ case $STAGE in
     cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
       --patch '{"spec":{"replicas":2}}' || true  # Overnight
 
-    echo -e "${GREEN}✓ Created base + 3 regions with inheritance${NC}"
-    echo "  Base: ${PREFIX}-traderx-base (shared config)"
-    echo "  US: 3 replicas (NYSE hours)"
-    echo "  EU: 5 replicas (Peak trading)"
-    echo "  Asia: 2 replicas (Overnight)"
+    echo -e "${GREEN}✓ Created base + 3 regions with links${NC}"
+    echo ""
+    echo "Links introduced (brief intro - full details in Stage 8):"
+    echo "  • App → Namespace (resolves confighubplaceholder)"
+    echo "  • trade-service → reference-data (service dependency)"
+    echo ""
+    echo "Structure:"
+    echo "  ${PREFIX}-traderx-base/        (shared config)"
+    echo "  ${PREFIX}-traderx-infra/       (namespace units)"
+    echo "  ${PREFIX}-traderx-prod-us/     (3 replicas - NYSE)"
+    echo "  ${PREFIX}-traderx-prod-eu/     (5 replicas - Peak)"
+    echo "  ${PREFIX}-traderx-prod-asia/   (2 replicas - Overnight)"
     ;;
 
   4)
@@ -106,14 +154,12 @@ case $STAGE in
       cub unit create reference-data \
         --space ${PREFIX}-traderx-prod-$region \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit reference-data \
-        --data k8s/reference-data.yaml || true
+        --upstream-unit reference-data || true
 
       cub unit create trade-service \
         --space ${PREFIX}-traderx-prod-$region \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit trade-service \
-        --data k8s/trade-service.yaml || true
+        --upstream-unit trade-service || true
     done
 
     # Regional customizations (preserved during upgrade!)
@@ -175,14 +221,12 @@ case $STAGE in
       cub unit create reference-data \
         --space ${PREFIX}-traderx-$env \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit reference-data \
-        --data k8s/reference-data.yaml || true
+        --upstream-unit reference-data || true
 
       cub unit create trade-service \
         --space ${PREFIX}-traderx-$env \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit trade-service \
-        --data k8s/trade-service.yaml || true
+        --upstream-unit trade-service || true
     done
 
     # Create regions (canonical pattern)
@@ -194,14 +238,12 @@ case $STAGE in
       cub unit create reference-data \
         --space ${PREFIX}-traderx-prod-$region \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit reference-data \
-        --data k8s/reference-data.yaml || true
+        --upstream-unit reference-data || true
 
       cub unit create trade-service \
         --space ${PREFIX}-traderx-prod-$region \
         --upstream-space ${PREFIX}-traderx-base \
-        --upstream-unit trade-service \
-        --data k8s/trade-service.yaml || true
+        --upstream-unit trade-service || true
     done
 
     # Regional customizations

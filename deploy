@@ -50,19 +50,56 @@ case $STAGE in
       --export > /tmp/worker-manifest.yaml
     kubectl apply -f /tmp/worker-manifest.yaml >/dev/null 2>&1
 
-    # Wait for worker to connect
-    sleep 10
-
-    # Set target on unit (auto-discovered as k8s-traderx-worker)
+    # Wait for worker to connect and register target
     TARGET_SLUG="k8s-${WORKER_NAME}"
-    cub unit set-target $TARGET_SLUG reference-data --space ${PREFIX}-traderx || true
+    MAX_WAIT=30
+
+    echo "Waiting for worker to connect and register target..."
+    for i in $(seq 1 $MAX_WAIT); do
+      if cub target list --space ${PREFIX}-traderx 2>/dev/null | grep -q "$TARGET_SLUG"; then
+        echo "✅ Target registered (${i}s)"
+        break
+      fi
+
+      if [ $((i % 5)) -eq 0 ]; then
+        echo "  Still waiting... (${i}/${MAX_WAIT}s)"
+      fi
+
+      sleep 1
+
+      if [ $i -eq $MAX_WAIT ]; then
+        echo "❌ Timeout: Worker target did not register after ${MAX_WAIT} seconds"
+        echo ""
+        echo "Troubleshooting:"
+        echo "  Check worker pod: kubectl get pods -n confighub | grep $WORKER_NAME"
+        echo "  Check worker logs: kubectl logs -n confighub -l app=$WORKER_NAME"
+        echo "  Check worker status: cub worker list --space ${PREFIX}-traderx"
+        exit 1
+      fi
+    done
+
+    # Set target on unit
+    echo "Setting target on reference-data unit..."
+    cub unit set-target reference-data $TARGET_SLUG --space ${PREFIX}-traderx
+    if [ $? -ne 0 ]; then
+      echo "❌ Error: Failed to set target on reference-data unit"
+      exit 1
+    fi
 
     # Apply unit
+    echo "Applying reference-data unit..."
     cub unit apply reference-data --space ${PREFIX}-traderx
+    if [ $? -ne 0 ]; then
+      echo "❌ Error: Failed to apply reference-data unit"
+      exit 1
+    fi
 
     echo -e "${GREEN}✓ Deployed reference-data to ${PREFIX}-traderx${NC}"
     echo ""
-    echo "Check status: kubectl get deployments -n ${PREFIX}-traderx"
+    echo "Check status:"
+    echo "  kubectl get deployments -n default"
+    echo "  kubectl get pods -n default -l app=reference-data"
+    echo "  kubectl logs -n default -l app=reference-data"
     ;;
 
   2)
@@ -87,26 +124,54 @@ case $STAGE in
     ;;
 
   3)
-    echo "Stage 3: Deploy all regions with custom scale"
+    echo "Stage 3: Deploy all regions with namespaces and links"
 
+    # Deploy namespaces first (infrastructure)
+    echo "Deploying namespaces..."
+    cub worker create worker-infra --space ${PREFIX}-traderx-infra 2>/dev/null || echo "Worker already exists"
+    cub target create worker-infra "{}" worker-infra --space ${PREFIX}-traderx-infra 2>/dev/null || echo "Target already exists"
+
+    # Install infra worker
+    cub worker install worker-infra --namespace confighub --space ${PREFIX}-traderx-infra --include-secret --export 2>&1 | \
+      kubectl apply -f - >/dev/null 2>&1 || true
+
+    # Wait briefly for infra worker to connect
+    sleep 10
+
+    # Deploy namespace units
     for region in us eu asia; do
-      echo "  Deploying to ${PREFIX}-traderx-prod-$region..."
+      echo "  Deploying namespace for $region..."
+      cub unit set-target ns-$region k8s-worker-infra --space ${PREFIX}-traderx-infra || true
+      cub unit apply ns-$region --space ${PREFIX}-traderx-infra || true
+    done
+
+    # Deploy application units to each region
+    for region in us eu asia; do
+      echo "  Deploying apps to ${PREFIX}-traderx-prod-$region..."
 
       # Create worker and target
       cub worker create worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Worker already exists"
       cub target create worker-$region "{}" worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
-      # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$region --space ${PREFIX}-traderx-prod-$region --export 2>&1 | \
-        sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
+      # Install worker to Kubernetes
+      cub worker install worker-$region --namespace confighub --space ${PREFIX}-traderx-prod-$region --include-secret --export 2>&1 | \
         kubectl apply -f - >/dev/null 2>&1 || true
 
-      # Set targets and apply all units
-      cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
-      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
+      # Wait for worker to connect
+      sleep 10
+
+      # Set targets and apply all units (Links will resolve namespaces)
+      cub unit set-target reference-data k8s-worker-$region --space ${PREFIX}-traderx-prod-$region || true
+      cub unit set-target trade-service k8s-worker-$region --space ${PREFIX}-traderx-prod-$region || true
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "Slug LIKE '%service' OR Slug = 'reference-data'" || true
     done
 
-    echo -e "${GREEN}✓ Deployed to all 3 regions${NC}"
+    echo -e "${GREEN}✓ Deployed to all 3 regions with proper namespaces${NC}"
+    echo ""
+    echo "Verify deployment (each region has its own namespace):"
+    echo "  kubectl get all -n ${PREFIX}-traderx-prod-us"
+    echo "  kubectl get all -n ${PREFIX}-traderx-prod-eu"
+    echo "  kubectl get all -n ${PREFIX}-traderx-prod-asia"
     echo ""
     echo "Verify regional scale:"
     echo "  kubectl get deploy trade-service -n ${PREFIX}-traderx-prod-us -o jsonpath='{.spec.replicas}'"

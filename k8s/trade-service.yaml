@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trade-service
+  namespace: confighubplaceholder  # Resolved via Link to namespace unit
   labels:
     app: trade-service
     component: trading-engine
@@ -18,7 +19,7 @@ spec:
     spec:
       containers:
       - name: trade-service
-        image: traderx/trade-service:v1
+        image: ghcr.io/finos/traderx/trade-service:latest
         ports:
         - containerPort: 8081
           name: http
@@ -57,6 +58,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: trade-service
+  namespace: confighubplaceholder  # Resolved via Link to namespace unit
   labels:
     app: trade-service
 spec:
