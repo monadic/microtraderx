@@ -1,6 +1,12 @@
-# Extending MicroTraderX with Additional Applications
+# Extending MicroTraderX with Additional Applications (Conceptual)
 
 Experimental approach to adding auxiliary applications using separate ConfigHub spaces.
+
+> **Note**: This document presents a conceptual architecture pattern. These extensions (stages 8-9) are **not implemented** in MicroTraderX. For production-ready implementations of these concepts, see:
+> - [devops-examples/cost-optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) - Full AI-powered cost optimization with web dashboard
+> - [devops-examples/drift-detector](https://github.com/monadic/devops-examples/tree/main/drift-detector) - Real drift detection with Sets/Filters/informers
+>
+> MicroTraderX (stages 1-7) remains a focused tutorial. This document shows **how** you could extend it using ConfigHub's modular architecture.
 
 ---
 
@@ -48,7 +54,11 @@ drift-detector/
 ### Label Base Resources
 
 ```bash
+# Conceptual example - shows the pattern
+# For correct --patch syntax, see TESTING.md
+
 for region in us eu asia; do
+  # In practice, use: echo '{...}' | cub unit update ... --patch --from-stdin
   cub unit update trade-service --space traderx-prod-$region \
     --patch '{"Labels":{"app":"microtraderx","cost-optimizable":"true"}}'
   cub unit update reference-data --space traderx-prod-$region \
@@ -85,15 +95,24 @@ cub unit apply analyzer --space cost-optimizer
 ### Discovery Query
 
 ```bash
+# Conceptual query (Labels.field notation may not be supported)
+# In practice, use simpler queries or label-based discovery
+
+# Example: Find all units in production spaces
 cub unit list --space "*" \
-  --where "Labels.app = 'microtraderx' AND Labels.cost-optimizable = 'true'"
+  --where "Space.Slug LIKE '%prod%' AND Slug LIKE '%service'"
+
+# Or query by specific unit names across all spaces
+cub unit list --space "*" \
+  --where "Slug = 'trade-service'"
 ```
 
-Returns:
+Conceptually returns units like:
 - traderx-prod-us/trade-service
 - traderx-prod-eu/trade-service
 - traderx-prod-asia/trade-service
-- reference-data units in each region
+
+For production implementation, see [devops-examples/cost-optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) which uses tested WHERE patterns.
 
 ### Apply Optimization
 
@@ -130,10 +149,19 @@ cub changeset apply fix-drift
 ### Discovery via WHERE Queries
 
 ```bash
+# Conceptual example - complex NOT LIKE patterns may not be supported
+# In practice, use simpler queries
+
+# Find all units with "service" in the name
 cub unit list --space "*" \
-  --where "Data CONTAINS 'replicas:' AND
-           Data NOT LIKE '%replicas: 1%' AND
-           Data NOT LIKE '%replicas: 2%'"
+  --where "Slug LIKE '%service'"
+
+# Find units in specific spaces
+cub unit list --space "traderx-prod-*" \
+  --where "Slug != ''"
+
+# For replica filtering, query in application code after fetching
+# See devops-examples/cost-optimizer for production patterns
 ```
 
 ### Links for Relationships
