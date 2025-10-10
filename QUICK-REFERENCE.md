@@ -170,7 +170,9 @@ After completing the tutorial:
 1. **[README.md](README.md)** - Read full stage explanations and concepts
 2. **[VISUAL-GUIDE.md](VISUAL-GUIDE.md)** - Study ASCII diagrams showing config flow
 3. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Deep dive into system architecture
-4. **[docs/APP-DEPLOYMENT.md](docs/APP-DEPLOYMENT.md)** - Understand setup vs deploy
+4. **[CONFIGHUB-PATTERNS-REVIEW.md](CONFIGHUB-PATTERNS-REVIEW.md)** - Comprehensive ConfigHub patterns analysis (Grade: A+)
+5. **[TESTING.md](TESTING.md)** - All 20 bugs fixed, known issues, CLI patterns reference
+6. **[docs/APP-DEPLOYMENT.md](docs/APP-DEPLOYMENT.md)** - Understand setup vs deploy
 
 ### Experiment
 - Change replica counts for different scenarios

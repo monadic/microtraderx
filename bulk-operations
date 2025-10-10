@@ -130,7 +130,7 @@ case "$OPERATION" in
       echo ""
       echo "  # Push to all production regions"
       echo "  cub unit update --upgrade --patch --space '$PROJECT-prod-*'"
-      echo "  cub unit apply --space '$PROJECT-prod-*' --where '*'"
+      echo "  cub unit apply --space '$PROJECT-prod-*' --where \\\"Slug != ''\\\""
       echo ""
       success "All regions get updated! That's the ConfigHub USP."
     fi
