@@ -2,6 +2,8 @@
 
 Stage-by-stage visual progression showing how the system evolves from a simple deployment to a sophisticated multi-region trading platform.
 
+TODO - cross reference this with main confighub docs site once 100% public.  Remove content from here that belongs there.
+
 ---
 
 ## Table of Contents
