@@ -2,6 +2,8 @@
 
 Visual diagrams showing the complete system architecture, inheritance patterns, and deployment flows.
 
+TODO - cross reference this with main confighub docs site once 100% public.  Remove content from here that belongs there.
+
 ---
 
 ## Table of Contents
