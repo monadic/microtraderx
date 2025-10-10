@@ -192,9 +192,12 @@ case $STAGE in
       cub target create worker-$region "{}" worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$region --space ${PREFIX}-traderx-prod-$region --export 2>&1 | \
+      cub worker install worker-$region --namespace confighub --space ${PREFIX}-traderx-prod-$region --include-secret --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Wait for worker to connect
+      sleep 10
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
@@ -256,9 +259,12 @@ case $STAGE in
       cub target create worker-$env "{}" worker-$env --space ${PREFIX}-traderx-$env 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$env --space ${PREFIX}-traderx-$env --export 2>&1 | \
+      cub worker install worker-$env --namespace confighub --space ${PREFIX}-traderx-$env --include-secret --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Wait for worker to connect
+      sleep 10
 
       # Set targets and apply all units
       cub unit set-target worker-$env --space ${PREFIX}-traderx-$env --where "Slug != ''" || true
@@ -274,9 +280,12 @@ case $STAGE in
       cub target create worker-$region "{}" worker-$region --space ${PREFIX}-traderx-prod-$region 2>/dev/null || echo "Target already exists"
 
       # Install worker to Kubernetes (using pinned working image)
-      cub worker install worker-$region --space ${PREFIX}-traderx-prod-$region --export 2>&1 | \
+      cub worker install worker-$region --namespace confighub --space ${PREFIX}-traderx-prod-$region --include-secret --export 2>&1 | \
         sed 's|ghcr.io/confighubai/confighub-worker:latest|ghcr.io/confighubai/confighub-worker@sha256:704352a1082163aee749c90b05223f882d8bacfd6e14981112b0d9f07b1d6fd0|g' | \
         kubectl apply -f - >/dev/null 2>&1 || true
+
+      # Wait for worker to connect
+      sleep 10
 
       # Set targets and apply all units
       cub unit set-target worker-$region --space ${PREFIX}-traderx-prod-$region --where "Slug != ''" || true
