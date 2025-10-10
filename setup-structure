@@ -157,12 +157,12 @@ case $STAGE in
 
     # Regional customizations (preserved during upgrade!)
     echo "  Customizing regional scale (will be preserved)..."
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-us \
-      --patch '{"spec":{"replicas":3}}' || true
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-eu \
-      --patch '{"spec":{"replicas":5}}' || true
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
-      --patch '{"spec":{"replicas":2}}' || true
+    echo '{"spec":{"replicas":3}}' | cub unit update trade-service \
+      --space ${PREFIX}-traderx-prod-us --patch --from-stdin || true
+    echo '{"spec":{"replicas":5}}' | cub unit update trade-service \
+      --space ${PREFIX}-traderx-prod-eu --patch --from-stdin || true
+    echo '{"spec":{"replicas":2}}' | cub unit update trade-service \
+      --space ${PREFIX}-traderx-prod-asia --patch --from-stdin || true
 
     echo -e "${GREEN}✓ Created base + regions with inheritance${NC}"
     echo "  Regional scale will be preserved during upgrades!"
@@ -191,8 +191,10 @@ case $STAGE in
     echo "  Create changeset:"
     echo "    cub changeset create market-data-v2"
     echo "  Add related changes:"
-    echo "    cub unit update reference-data --space ${PREFIX}-traderx-prod-us --patch '{\"image\":\"v2\"}'"
-    echo "    cub unit update trade-service --space ${PREFIX}-traderx-prod-us --patch '{\"image\":\"v2\"}'"
+    echo "    echo '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"reference-data\",\"image\":\"traderx/reference-data:v2\"}]}}}}' | \\"
+    echo "      cub unit update reference-data --space ${PREFIX}-traderx-prod-us --patch --from-stdin"
+    echo "    echo '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"trade-service\",\"image\":\"traderx/trade-service:v2\"}]}}}}' | \\"
+    echo "      cub unit update trade-service --space ${PREFIX}-traderx-prod-us --patch --from-stdin"
     echo "  Apply atomically:"
     echo "    cub changeset apply market-data-v2"
     ;;
@@ -241,12 +243,12 @@ case $STAGE in
 
     # Regional customizations
     echo "  Customizing regional scale..."
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-us \
-      --patch '{"spec":{"replicas":3}}' || true
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-eu \
-      --patch '{"spec":{"replicas":5}}' || true
-    cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
-      --patch '{"spec":{"replicas":2}}' || true
+    echo '{"spec":{"replicas":3}}' | cub unit update trade-service \
+      --space ${PREFIX}-traderx-prod-us --patch --from-stdin || true
+    echo '{"spec":{"replicas":5}}' | cub unit update trade-service \
+      --space ${PREFIX}-traderx-prod-eu --patch --from-stdin || true
+    echo '{"spec":{"replicas":2}}' | cub unit update trade-service \
+      --space ${PREFIX}-traderx-prod-asia --patch --from-stdin || true
 
     echo -e "${GREEN}✓ Complete system created!${NC}"
     echo ""
