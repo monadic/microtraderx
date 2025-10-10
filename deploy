@@ -163,7 +163,8 @@ case $STAGE in
       # Set targets and apply all units (Links will resolve namespaces)
       cub unit set-target reference-data k8s-worker-$region --space ${PREFIX}-traderx-prod-$region || true
       cub unit set-target trade-service k8s-worker-$region --space ${PREFIX}-traderx-prod-$region || true
-      cub unit apply --space ${PREFIX}-traderx-prod-$region --where "Slug LIKE '%service' OR Slug = 'reference-data'" || true
+      # Apply both units (WHERE clause doesn't support OR, only AND)
+      cub unit apply --space ${PREFIX}-traderx-prod-$region --unit reference-data,trade-service || true
     done
 
     echo -e "${GREEN}✓ Deployed to all 3 regions with proper namespaces${NC}"
