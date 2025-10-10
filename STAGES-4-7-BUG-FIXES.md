@@ -1,14 +1,14 @@
 # Stages 4-7 Bug Fixes Applied
 
 **Date**: 2025-10-10
-**Status**: All fixes applied successfully
+**Status**: All fixes applied successfully (updated with Bug #20)
 
 ---
 
 ## Summary
 
-Fixed 5 bugs in Stages 4-7 based on pre-emptive analysis:
-- 2 code bugs (--patch inline JSON)
+Fixed 6 bugs in Stages 4-7:
+- 3 code bugs (--patch inline JSON + --where "*" syntax)
 - 3 documentation bugs (misleading examples)
 - 1 potential bug verified as NOT a bug
 
@@ -93,6 +93,39 @@ cub unit set-target <target-slug> --where "Slug LIKE 'app-%'"
 ```
 
 **Result**: ✅ `cub unit set-target` DOES support WHERE clause - command is correct
+
+---
+
+## Bug #20: WHERE "*" Invalid with --space ✅ FIXED (Found During Testing)
+
+**File**: `deploy` (lines 201, 265, 283)
+**Issue**: Using `--where "*"` with `--space` creates invalid SQL syntax
+
+**Error**:
+```
+Failed: HTTP 400: invalid attribute name at `* AND SpaceID = '...'`
+```
+
+**Root Cause**: ConfigHub combines `--where "*"` with implicit space filter, creating `* AND SpaceID = '...'` which is invalid SQL.
+
+**Locations Fixed**:
+1. Line 201 (Stage 4): Regional deployments
+2. Line 265 (Stage 7): Dev/staging deployments
+3. Line 283 (Stage 7): Regional deployments
+
+**Before**:
+```bash
+cub unit apply --space ${PREFIX}-traderx-prod-$region --where "*"
+```
+
+**After**:
+```bash
+cub unit apply --space ${PREFIX}-traderx-prod-$region --where "Slug != ''"
+```
+
+**Why Fix Works**: `"Slug != ''"` matches all non-empty units (equivalent intent to `"*"`) but is valid SQL that can be combined with space filter.
+
+**Found**: During Stage 4 deployment testing after fixing Bugs #14-19
 
 ---
 
@@ -265,9 +298,10 @@ cub unit update <unit> --patch '<inline-json>'
 ### Stages 4-7 Bugs (Fixed Now)
 - Bug #14: patch inline → stdin (SAME as #11)
 - Bug #19: patch inline → stdin (SAME as #11)
+- Bug #20: WHERE "*" with --space (NEW pattern - found during testing)
 - Bugs #16-18: Documentation showing wrong syntax
 
-**Total Bugs Fixed Across All Stages**: 18 (13 from Stages 1-3 + 5 from Stages 4-7)
+**Total Bugs Fixed Across All Stages**: 19 (13 from Stages 1-3 + 6 from Stages 4-7)
 
 ---
 
