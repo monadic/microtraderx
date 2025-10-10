@@ -155,7 +155,7 @@ microtraderx/
 
 ---
 
-## ConfigHub as a Configuration Database with extras
+## ConfigHub is a System of Record to configure your deployments
 
 ConfigHub can act like a database for your config:
 
