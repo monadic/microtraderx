@@ -13,7 +13,7 @@ See [Known Issues](#known-issues-all-fixed) section below for details.
 **Before running the tutorial**, verify ConfigHub + Kubernetes integration is working:
 
 ```bash
-./test-confighub-k8s
+curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-confighub-k8s | bash
 ```
 
 This runs the [ConfigHub + Kubernetes Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) from the devops-sdk repository.
@@ -41,11 +41,6 @@ Summary:
 All resources are automatically cleaned up on exit.
 
 **If this test fails**, do not proceed with the tutorial. Fix your ConfigHub/Kubernetes setup first.
-
-**Note**: The wrapper script calls the TCK from devops-sdk. You can also run it directly:
-```bash
-curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-confighub-k8s | bash
-```
 
 ---
 

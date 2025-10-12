@@ -11,7 +11,7 @@ Quick reference for running the tutorial. See [README.md](README.md) for detaile
 3. Kubernetes: Local (kind/minikube) or remote cluster
 4. jq: Optional but recommended
 
-**Pre-Flight Check**: Run `./test-confighub-k8s` to verify setup
+**Pre-Flight Check**: Run `curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-confighub-k8s | bash` to verify setup
 
 ---
 

@@ -67,7 +67,7 @@ If you are interested in this topic you can read more in **[docs/APP-DEPLOYMENT.
 We recommend that you verify your setup before starting the Tutorial:
 
 ```bash
-./test-confighub-k8s
+curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-confighub-k8s | bash
 ```
 
 This runs a [Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) which tests:
