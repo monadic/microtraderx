@@ -63,8 +63,8 @@ echo ""
 
 # Check 4: ConfigHub authentication
 echo "Checking ConfigHub authentication..."
-if cub auth status &>/dev/null; then
-  user=$(cub auth status 2>/dev/null | grep "User:" | awk '{print $2}' || echo "unknown")
+if cub auth get-token &>/dev/null; then
+  user=$(cub auth get-token 2>/dev/null | grep "User:" | awk '{print $2}' || echo "unknown")
   check_passed "ConfigHub authenticated (user: $user)"
 else
   check_failed "ConfigHub authenticated" "Run: cub auth login"

@@ -38,8 +38,8 @@ case "$OPERATION" in
 
       # Actually do it (if units exist)
       if cub unit list --space $PROJECT-base 2>/dev/null | grep -q trade-service; then
-        cub unit update trade-service --space $PROJECT-base \
-          --patch "{\"spec\":{\"replicas\":$VALUE}}" || true
+        echo "{\"spec\":{\"replicas\":$VALUE}}" | \
+          cub unit update trade-service --space $PROJECT-base --patch --from-stdin || true
         cub unit apply trade-service --space $PROJECT-base || true
         success "Scaled trade-service to $VALUE replicas"
       else
@@ -78,9 +78,10 @@ case "$OPERATION" in
       echo "  cub unit update --space '*' --where \"Slug = 'trade-service' AND Space.Slug LIKE '%prod%'\" --patch '{\"spec\":{\"replicas\":$VALUE}}'"
       echo ""
 
-      cub unit update --space '*' \
+      echo "{\"spec\":{\"replicas\":$VALUE}}" | \
+        cub unit update --space '*' \
         --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
-        --patch "{\"spec\":{\"replicas\":$VALUE}}" 2>/dev/null || true
+        --patch --from-stdin 2>/dev/null || true
 
       success "Updated ConfigHub config for $UNITS units"
       echo ""
