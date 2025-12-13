@@ -51,18 +51,76 @@ If you are interested in this topic you can read more in **[docs/APP-DEPLOYMENT.
 
 ---
 
-# Running the MicroTraderX example app 
+# Running the MicroTraderX example app
 
 ## Prerequisites
 
-1. ConfigHub CLI: `cub upgrade`
-2. ConfigHub Auth: `cub auth login`
-3. Kubernetes: Local (kind/minikube) or remote cluster
-4. jq: For JSON parsing (optional)
+### Step 1: Install Docker
 
-### Pre-Flight Check
+Docker is required to run Kubernetes locally.
 
-We recommend that you verify your setup before starting the Tutorial:
+**macOS:**
+```bash
+# Install Docker Desktop
+brew install --cask docker
+
+# Start Docker Desktop (or open from Applications)
+open -a Docker
+
+# Verify Docker is running
+docker info
+```
+
+**Linux:**
+```bash
+# Install Docker Engine (Ubuntu/Debian)
+curl -fsSL https://get.docker.com | sh
+sudo systemctl start docker
+sudo usermod -aG docker $USER  # Log out and back in after this
+```
+
+### Step 2: Create ConfigHub Account and Install CLI
+
+```bash
+# 1. Sign up for ConfigHub (free tier available)
+open https://hub.confighub.com
+
+# 2. Install ConfigHub CLI (macOS)
+brew install confighubai/tap/cub
+
+# 3. Login to ConfigHub
+cub auth login
+```
+
+For Linux/Windows CLI installation, see [ConfigHub docs](https://docs.confighub.com/getting-started/).
+
+### Step 3: Install Kubernetes (Kind)
+
+Kind runs Kubernetes in Docker containers - perfect for local development.
+
+```bash
+# Install Kind
+brew install kind    # macOS
+# or: go install sigs.k8s.io/kind@latest
+
+# Create a cluster
+kind create cluster --name traderx
+
+# Verify cluster is running
+kubectl cluster-info --context kind-traderx
+```
+
+### Step 4: Optional Tools
+
+```bash
+# jq for JSON parsing (used in some examples)
+brew install jq    # macOS
+# or: apt install jq  # Linux
+```
+
+### Pre-Flight Check (Recommended)
+
+Verify your complete setup before starting the tutorial:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-confighub-k8s | bash
@@ -70,11 +128,16 @@ curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/test-config
 
 This runs a [Mini TCK](https://github.com/monadic/devops-sdk/blob/main/TCK.md) which tests:
 - ✅ ConfigHub API connectivity
-- ✅ Kubernetes (Kind) cluster access 
+- ✅ Kubernetes (Kind) cluster access
 - ✅ ConfigHub Worker installation and connection
 - ✅ End-to-end apply workflow
 
 You should see: `🎉 SUCCESS! ConfigHub + Kubernetes integration verified`
+
+**If the check fails**, review the steps above. Common issues:
+- Docker not running: `open -a Docker` (macOS) or `sudo systemctl start docker` (Linux)
+- Kind cluster not created: `kind create cluster --name traderx`
+- Not logged in to ConfigHub: `cub auth login`
 
 See [TESTING.md](TESTING.md) for details.
 
