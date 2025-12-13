@@ -1,8 +1,6 @@
-TODO: align this content with the main confighub and sdk docs, based on the purpose of this page which is explaining the app deployment pattern and the separation between setup-structure and deploy scripts in microtraderx.
-
----
-
 # MicroTraderX App Deployment
+
+> **ConfigHub Documentation**: For detailed two-state model documentation (desired vs live state, update vs apply), see [docs.confighub.com](https://docs.confighub.com). This document explains MicroTraderX's two-script deployment pattern.
 
 ## Overview
 

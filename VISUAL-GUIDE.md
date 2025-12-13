@@ -2,7 +2,7 @@
 
 Stage-by-stage visual progression showing how the system evolves from a simple deployment to a sophisticated multi-region trading platform.
 
-TODO - cross reference this with main confighub docs site once 100% public.  Remove content from here that belongs there.
+> **ConfigHub Documentation**: For detailed explanations of ConfigHub concepts (spaces, units, workers, push-upgrade, changesets, filters, lateral promotion), see [docs.confighub.com](https://docs.confighub.com). This guide focuses on MicroTraderX-specific examples.
 
 ---
 
@@ -310,8 +310,9 @@ Business Logic:
 #### Update Base
 
 ```bash
-cub unit update trade-service --space traderx-base \
-  --patch '{"algorithm":"quantum","image":"v2","timeout":"60s"}'
+# Update base unit via stdin (correct pattern)
+echo '{"algorithm":"quantum","image":"v2","timeout":"60s"}' | \
+  cub unit update trade-service --space traderx-base --patch --from-stdin
 ```
 
 ```
@@ -606,10 +607,14 @@ WITH Changeset (SAFE!):
 ═══════════════════════
 
 cub changeset create market-data-v2
-cub unit update reference-data --space traderx-prod-us \
-  --patch '{"image":"v2"}'
-cub unit update trade-service --space traderx-prod-us \
-  --patch '{"image":"v2"}'
+
+# Stage updates via stdin
+echo '{"image":"v2"}' | cub unit update reference-data --space traderx-prod-us \
+  --patch --from-stdin
+
+echo '{"image":"v2"}' | cub unit update trade-service --space traderx-prod-us \
+  --patch --from-stdin
+
 cub changeset apply market-data-v2
 
 ┌─────────────────────────────────────────────┐

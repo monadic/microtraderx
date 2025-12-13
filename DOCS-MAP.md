@@ -1,5 +1,7 @@
 # MicroTraderX Documentation Map
 
+> **ConfigHub Documentation**: For comprehensive ConfigHub concepts, see [docs.confighub.com](https://docs.confighub.com). This document maps MicroTraderX's local documentation.
+
 Quick reference guide to all documentation files.  This page built by Claude based on docs review.
 
 ---

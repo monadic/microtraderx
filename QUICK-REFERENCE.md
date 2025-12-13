@@ -1,5 +1,7 @@
 # MicroTraderX Quick Start
 
+> **ConfigHub Documentation**: For CLI command reference and troubleshooting, see [docs.confighub.com](https://docs.confighub.com). This guide covers MicroTraderX-specific commands.
+
 Quick reference for running the tutorial. See [README.md](README.md) for detailed explanations and concepts.
 
 ---

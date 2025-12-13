@@ -1,8 +1,6 @@
-TODO: align this content with the main confighub and sdk docs, based on the purpose of this page which is documenting critical lessons about ConfigHub auto-updates, GitOps integration patterns, and the relationship between configuration and deployment state.
-
----
-
 # Notes on ConfigHub Auto-Updates and GitOps
+
+> **ConfigHub Documentation**: For comprehensive two-state model and GitOps integration documentation, see [docs.confighub.com](https://docs.confighub.com). This document covers lessons learned about update vs apply behavior.
 
 ## Executive Summary
 

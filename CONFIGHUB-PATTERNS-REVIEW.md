@@ -1,5 +1,7 @@
 # ConfigHub Patterns Review - MicroTraderX
 
+> **ConfigHub Documentation**: For canonical pattern documentation (upstream/downstream, push-upgrade, links, WHERE clauses), see [docs.confighub.com](https://docs.confighub.com). This document validates MicroTraderX implementation against those patterns.
+
 **Date**: 2025-10-10
 **Status**: ✅ Excellent pattern usage, all canonical patterns correctly implemented
 

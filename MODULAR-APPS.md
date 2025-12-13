@@ -1,5 +1,7 @@
 # Extending MicroTraderX with Additional Applications (Conceptual)
 
+> **ConfigHub Documentation**: For Sets, Filters, WHERE queries, and cross-space discovery patterns, see [docs.confighub.com](https://docs.confighub.com). This document shows conceptual extension patterns for MicroTraderX.
+
 Experimental approach to adding auxiliary applications using separate ConfigHub spaces.
 
 > **Note**: This document presents a conceptual architecture pattern. These extensions (stages 8-9) are **not implemented** in MicroTraderX. For production-ready implementations of these concepts, see:

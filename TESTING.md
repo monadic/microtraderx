@@ -46,6 +46,8 @@ All resources are automatically cleaned up on exit.
 
 ## CLI Validation Status
 
+**Documentation Code is Production Code:** Users copy-paste commands from docs. Invalid examples waste hours of debugging time.
+
 All ConfigHub CLI commands in this project have been validated for correctness:
 
 **Validation Results** (Last checked: 2025-10-12):

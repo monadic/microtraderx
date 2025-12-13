@@ -2,7 +2,7 @@
 
 Visual diagrams showing the complete system architecture, inheritance patterns, and deployment flows.
 
-TODO - cross reference this with main confighub docs site once 100% public.  Remove content from here that belongs there.
+> **ConfigHub Documentation**: For detailed explanations of ConfigHub concepts (spaces, units, workers, upstream/downstream inheritance, push-upgrade, lateral promotion), see [docs.confighub.com](https://docs.confighub.com). This document focuses on MicroTraderX-specific architecture.
 
 ---
 
@@ -68,11 +68,7 @@ TODO - cross reference this with main confighub docs site once 100% public.  Rem
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Concepts**:
-- **Base Space**: Single source of truth for configuration
-- **Inheritance**: Downstream spaces inherit from base via `upstream-unit`
-- **Push-Upgrade**: Changes flow from base to all descendants
-- **Regional Customization**: Each region has unique replica counts that are preserved during upgrades
+**Key Concepts**: See [docs.confighub.com](https://docs.confighub.com) for base spaces, inheritance, and push-upgrade. MicroTraderX demonstrates regional customization where each region has unique replica counts (US:3, EU:5, Asia:2) preserved during upgrades.
 
 ---
 
@@ -214,8 +210,9 @@ traderx-base/trade-service
 STEP 1: Update Base
 ════════════════════
 
-cub unit update trade-service --space traderx-base \
-  --patch '{"algorithm":"quantum","image":"v2","timeout":"60s"}'
+# Update base unit via stdin (correct pattern)
+echo '{"algorithm":"quantum","image":"v2","timeout":"60s"}' | \
+  cub unit update trade-service --space traderx-base --patch --from-stdin
 
 traderx-base/trade-service
 ┌──────────────────────────┐
@@ -278,23 +275,7 @@ US Region:               EU Region:              Asia Region:
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-**The Magic**:
-- One command updates all regions
-- Base changes propagate automatically
-- Regional customizations are preserved
-- No manual editing of 3 separate files
-- No risk of inconsistent deployments
-
-**Traditional Tools Would Require**:
-```bash
-# Edit us/deployment.yaml - change algorithm, keep replicas: 3
-# Edit eu/deployment.yaml - change algorithm, keep replicas: 5
-# Edit asia/deployment.yaml - change algorithm, keep replicas: 2
-kubectl apply -f us/deployment.yaml
-kubectl apply -f eu/deployment.yaml
-kubectl apply -f asia/deployment.yaml
-# Hope you didn't mess up any of the 3 files!
-```
+**Result**: One command updates all three regions while preserving regional replica counts. See [push-upgrade documentation](https://docs.confighub.com) for details.
 
 ---
 
@@ -412,17 +393,7 @@ Emergency:              ┌──→ asia  (immediate)
                         └──→ base   (fix root cause)
 ```
 
-**Why Lateral Promotion Matters**:
-- **Speed**: Fix critical bugs in minutes, not hours
-- **Business-aware**: Respects market hours and trading volumes
-- **Risk management**: Skip regions that can wait
-- **Audit trail**: Every change tracked in ConfigHub
-- **Eventual consistency**: Backfill and update base when safe
-
-**Traditional Tools Can't Do This**:
-- GitOps: Requires PR → review → merge → sync (too slow)
-- Manual kubectl: No audit trail, no rollback, error-prone
-- Helm: Would require custom scripting for lateral promotion
+**Why This Matters for MicroTraderX**: Lateral promotion lets EU emergency fixes reach Asia before Tokyo markets open (2 hour window), while US backfill happens safely during market close. See [lateral promotion documentation](https://docs.confighub.com) for details.
 
 ---
 
@@ -539,19 +510,7 @@ DETAILED FLOW FOR ONE REGION (US):
        │                        │                        │
 ```
 
-**Worker Responsibilities**:
-1. **Install**: Deploy worker pod to Kubernetes cluster
-2. **Watch**: Continuously monitor ConfigHub for changes
-3. **Apply**: Create/update Kubernetes resources from ConfigHub units
-4. **Report**: Send live-state back to ConfigHub (pod status, health)
-5. **Reconcile**: Ensure Kubernetes matches ConfigHub (drift detection)
-
-**Key Points**:
-- Worker runs IN the Kubernetes cluster it manages
-- One worker per space (or multiple spaces with filtering)
-- Worker has RBAC permissions to create resources
-- Changes in ConfigHub trigger automatic reconciliation
-- Live-state flows back to ConfigHub for visibility
+**Worker Details**: See [worker documentation](https://docs.confighub.com) for installation, RBAC, live-state reporting, and reconciliation. In MicroTraderX, each regional cluster has its own worker managing that space.
 
 ---
 
@@ -592,23 +551,17 @@ Real-world scenario with separate clusters per region:
 └──────────────┘       └──────────────┘      └──────────────┘
 ```
 
-**Benefits of This Architecture**:
-1. **Single Control Plane**: ConfigHub manages all regions
-2. **Independent Clusters**: Each region can scale/fail independently
-3. **Local Workers**: Workers run in the cluster they manage (low latency)
-4. **Centralized Visibility**: All regions visible in ConfigHub
-5. **Global Updates**: Push-upgrade updates all regions from one place
+**MicroTraderX Benefit**: Single ConfigHub control plane manages all 3 regional clusters, enabling global updates via push-upgrade while each region operates independently with local workers.
 
 ---
 
 ## Summary
 
-MicroTraderX demonstrates ConfigHub's key architectural advantages:
+MicroTraderX demonstrates ConfigHub patterns applied to a multi-region trading platform:
 
-1. **Inheritance**: Base configurations flow to all environments/regions
-2. **Customization**: Regional overrides preserved during updates
-3. **Push-Upgrade**: One command updates everywhere consistently
-4. **Lateral Promotion**: Emergency fixes bypass normal flow
-5. **Multi-Cluster**: Manage global deployments from central control plane
+- **Base → Regional inheritance** with US:3, EU:5, Asia:2 replica customization preserved
+- **Push-upgrade** propagates algorithm/image updates across all regions
+- **Lateral promotion** for EU emergency fixes reaching Asia before Tokyo market open
+- **Multi-cluster** deployment with one worker per regional cluster
 
-The architecture is simple but powerful: ConfigHub holds the desired state, workers make it real in Kubernetes, and inheritance + push-upgrade keep everything in sync while preserving regional customizations.
+For detailed explanations of ConfigHub concepts, see [docs.confighub.com](https://docs.confighub.com).
