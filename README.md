@@ -228,10 +228,9 @@ cub unit list --space "*" \
   --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
   --columns Name,Space.Slug,Data
 
-# UPDATE: Modify units in place
-cub unit update --space "*" \
-  --where "Slug = 'trade-service'" \
-  --patch '{"spec":{"replicas":3}}'
+# UPDATE: Modify units in place (use functions for type-safe updates)
+cub run set-replicas --replicas 3 \
+  --space prod --where "Slug = 'trade-service'"
 
 # INSERT: Create new units
 cub unit create --space prod trade-service service.yaml
@@ -388,25 +387,25 @@ for region in us eu asia; do
 
   # Link apps to namespace (resolves confighubplaceholder)
   cub link create --space traderx-prod-$region \
-    --from reference-data --to ns-$region --to-space traderx-infra
+    ref-data-to-ns reference-data ns-$region traderx-infra
 
   cub link create --space traderx-prod-$region \
-    --from trade-service --to ns-$region --to-space traderx-infra
+    trade-svc-to-ns trade-service ns-$region traderx-infra
 
   # Link service dependency (trade-service needs reference-data)
   cub link create --space traderx-prod-$region \
-    --from trade-service --to reference-data
+    trade-svc-to-ref trade-service reference-data
 done
 
 # Customize per region based on trading volume
-cub unit update trade-service --space traderx-prod-us \
-  --patch '{"spec":{"replicas":3}}'    # NYSE hours
+cub run set-replicas --replicas 3 \
+  --unit trade-service --space traderx-prod-us    # NYSE hours
 
-cub unit update trade-service --space traderx-prod-eu \
-  --patch '{"spec":{"replicas":5}}'    # Peak trading
+cub run set-replicas --replicas 5 \
+  --unit trade-service --space traderx-prod-eu    # Peak trading
 
-cub unit update trade-service --space traderx-prod-asia \
-  --patch '{"spec":{"replicas":2}}'    # Overnight
+cub run set-replicas --replicas 2 \
+  --unit trade-service --space traderx-prod-asia  # Overnight
 
 # deploy
 # First deploy namespaces (infrastructure)
@@ -545,10 +544,9 @@ cub unit list --space "*" \
 # trade-service   traderx-prod-eu            5
 # trade-service   traderx-prod-asia          5
 
-# Step 2: Update using the same WHERE clause
-cub unit update --space "*" \
-  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
-  --patch '{"spec":{"replicas":3}}'
+# Step 2: Update using the same WHERE clause (use functions for type-safe updates)
+cub run set-replicas --replicas 3 \
+  --space "*" --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'"
 
 # Step 3: Verify changes were made
 cub unit list --space "*" \
@@ -565,27 +563,23 @@ cub unit apply --space "*" \
 ### Advanced: Reusable Filters
 
 ```bash
-# Create named filter for common queries
-cub filter create high-volume-trading Unit \
-  --where-field "Data CONTAINS 'replicas:' AND replicas > 2"
+# Create named filter for common queries (requires --space)
+cub filter create --space traderx-base high-volume-trading Unit \
+  --where-data "spec.replicas > 2"
 
 # Use filter instead of WHERE clause
 cub unit list --filter high-volume-trading --space "*"
-cub unit update --filter high-volume-trading --space "*" --patch '...'
+cub run set-replicas --replicas 3 --filter high-volume-trading --space "*"
 cub unit apply --filter high-volume-trading --space "*"
 ```
 
 ### ConfigHub Functions: Type-Safe Operations
 
-The examples above use `--patch` with raw JSON. ConfigHub provides **functions** as a safer, more maintainable alternative:
+ConfigHub provides **functions** as a safer, more maintainable alternative to raw patches:
 
 ```bash
-# ❌ Raw patch (works but error-prone)
-cub unit update trade-service --space prod-us \
-  --patch '{"spec":{"replicas":3}}'
-
 # ✅ Function (type-safe, self-documenting)
-cub run set-replicas 3 --unit trade-service --space prod-us
+cub run set-replicas --replicas 3 --unit trade-service --space prod-us
 ```
 
 **Why functions are better:**
@@ -610,21 +604,18 @@ cub run set-container-resources --container-name api \
   --unit trade-service --space prod-asia
 ```
 
-For operations without functions, use patches:
+For operations without built-in functions, use `cub unit update` with a YAML file:
 ```bash
-# Scale replicas (use patch, not function)
-cub unit update trade-service --space prod-us \
-  --patch '{"spec":{"replicas":3}}'
+# Update configuration from a file
+cub unit update trade-service --space prod-us config.yaml
 
-# Patches work with WHERE clauses too
-cub unit update --space "*" \
-  --where "Slug = 'trade-service' AND Space.Slug LIKE '%prod%'" \
-  --patch '{"spec":{"replicas":3}}'
+# Or pipe JSON/YAML via stdin
+echo 'spec: {replicas: 3}' | cub unit update trade-service --space prod-us -
 ```
 
 **When to use what:**
 - **Functions**: Preferred for common operations (scale, env vars, images)
-- **Patches**: Needed for complex or uncommon changes
+- **File updates**: Needed for complex or uncommon changes
 
 ---
 
@@ -636,12 +627,17 @@ Changesets ensure related changes deploy together or not at all. Supports team c
 # New market data format requires updating both services together
 
 # Changesets coordinate changes across teams and services
-cub changeset create market-data-v2  # Supports ownership and approval workflows
-cub unit update reference-data --space traderx-prod-us \
-  --patch '{"image": "reference-data:v2"}'  # Data team's change
-cub unit update trade-service --space traderx-prod-us \
-  --patch '{"image": "trade-service:v2"}'   # Trading team's change
-cub changeset apply market-data-v2  # Atomic deployment when both teams are ready
+cub changeset create --space traderx-prod-us market-data-v2  # Supports ownership/approval
+
+# Associate units with changeset using --changeset flag
+cub run set-image-reference --container-name api --image-reference :v2 \
+  --unit reference-data --space traderx-prod-us --changeset market-data-v2
+
+cub run set-image-reference --container-name api --image-reference :v2 \
+  --unit trade-service --space traderx-prod-us --changeset market-data-v2
+
+# Apply units in the changeset together
+cub unit apply --space traderx-prod-us --where "ChangeSet.Slug = 'market-data-v2'"
 ```
 
 ```
@@ -676,12 +672,12 @@ cub revision list trade-service --space traderx-prod-eu --limit 3
 
 # Asia market opens soon, requires immediate fix
 cub unit update trade-service --space traderx-prod-asia \
-  --merge-unit traderx-prod-eu/trade-service \
-  --merge-base=46 --merge-end=47  # Merge only the emergency fix
+  --merge-source traderx-prod-eu/trade-service \
+  --merge-base 46 --merge-end 47  # Merge only the emergency fix
 
 # US market closed, backfill later
 cub unit update trade-service --space traderx-prod-us \
-  --merge-unit traderx-prod-eu/trade-service
+  --merge-source traderx-prod-eu/trade-service
 ```
 
 ```
@@ -765,9 +761,9 @@ for region in us eu asia; do
 done
 
 # Regional customizations based on trading volume
-cub unit update trade-service --space traderx-prod-us --patch '{"replicas": 3}'   # NYSE
-cub unit update trade-service --space traderx-prod-eu --patch '{"replicas": 5}'   # Peak
-cub unit update trade-service --space traderx-prod-asia --patch '{"replicas": 2}' # Overnight
+cub run set-replicas --replicas 3 --unit trade-service --space traderx-prod-us    # NYSE
+cub run set-replicas --replicas 5 --unit trade-service --space traderx-prod-eu    # Peak
+cub run set-replicas --replicas 2 --unit trade-service --space traderx-prod-asia  # Overnight
 ```
 
 ### deploy
@@ -841,21 +837,22 @@ cub unit approve --space prod todo-app
 
 **4. Links** - Dependency management with needs/provides
 ```bash
-# Express service dependencies
-cub link create trade-service-to-db \
-  trade-service-deployment \
-  database-deployment \
-  --space traderx-dev
+# Express service dependencies (positional args: slug from-unit to-unit [to-space])
+cub link create --space traderx-dev \
+  trade-svc-to-db trade-service-deployment database-deployment
 
 # ConfigHub auto-fills placeholders from linked units
 # See: https://docs.confighub.com/entities/link/
 ```
 
-**5. Sets** - Logical grouping for bulk operations
+**5. Filters** - Reusable queries for bulk operations
 ```bash
-# Group related units
-cub set create critical-services
-cub set add critical-services trade-service reference-data
+# Create named filter for targeting units
+cub filter create --space traderx-base critical-services Unit \
+  --where-field "Labels.critical = 'true'"
+
+# Use filter for bulk operations
+cub unit apply --filter critical-services --space "*"
 ```
 
 ### Additional Capabilities
