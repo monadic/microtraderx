@@ -2,8 +2,6 @@
 
 Learn ConfigHub fundamentals by building a simplified trading platform with multi-region deployment.
 
-TODO: create Stage 8 to show Links properly; and then update extension apps.  Check visual diagrams are still correct.
-
 ## 📚 Tutorial vs Production
 
 **Tutorial: MicroTraderX** 
@@ -274,7 +272,7 @@ traderx-prod/
 
 Deploy three regions with infrastructure separation, service dependencies, and namespace isolation.
 
-**New concept: Links** (brief introduction - detailed in Stage 8)
+**New concept: Links**
 
 Links express relationships between units:
 - **Infrastructure links**: App units → namespace units (resolves `confighubplaceholder`)
@@ -387,9 +385,6 @@ traderx-prod-asia/             # Asia region
 ```
 
 **Result**: Each region isolated in its own namespace, services start in correct order.
-
-*Full Links explanation with advanced patterns in Stage 8*
-
 
 ---
 
