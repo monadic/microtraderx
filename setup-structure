@@ -109,12 +109,10 @@ case $STAGE in
 
     # Regional customizations based on trading volume
     echo "  Customizing regional scale..."
-    echo '{"spec":{"replicas":3}}' | cub unit update trade-service --space ${PREFIX}-traderx-prod-us \
-      --patch --from-stdin || true  # NYSE hours
-    echo '{"spec":{"replicas":5}}' | cub unit update trade-service --space ${PREFIX}-traderx-prod-eu \
-      --patch --from-stdin || true  # Peak trading
-    echo '{"spec":{"replicas":2}}' | cub unit update trade-service --space ${PREFIX}-traderx-prod-asia \
-      --patch --from-stdin || true  # Overnight
+    # Use ConfigHub functions to set replicas (not --patch which patches Unit metadata, not config data)
+    cub run set-replicas --replicas 3 --unit trade-service --space ${PREFIX}-traderx-prod-us || true   # NYSE hours
+    cub run set-replicas --replicas 5 --unit trade-service --space ${PREFIX}-traderx-prod-eu || true   # Peak trading
+    cub run set-replicas --replicas 2 --unit trade-service --space ${PREFIX}-traderx-prod-asia || true # Overnight
 
     echo -e "${GREEN}✓ Created base + 3 regions with links${NC}"
     echo ""

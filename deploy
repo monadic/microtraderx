@@ -86,6 +86,10 @@ case $STAGE in
       exit 1
     fi
 
+    # Create the confighubplaceholder namespace (placeholder pattern - resolved by Links in Stage 3+)
+    # For Stage 1, we create it manually since Links aren't introduced yet
+    kubectl create namespace confighubplaceholder --dry-run=client -o yaml | kubectl apply -f - >/dev/null 2>&1
+
     # Apply unit
     echo "Applying reference-data unit..."
     cub unit apply reference-data --space ${PREFIX}-traderx
@@ -97,9 +101,9 @@ case $STAGE in
     echo -e "${GREEN}✓ Deployed reference-data to ${PREFIX}-traderx${NC}"
     echo ""
     echo "Check status:"
-    echo "  kubectl get deployments -n default"
-    echo "  kubectl get pods -n default -l app=reference-data"
-    echo "  kubectl logs -n default -l app=reference-data"
+    echo "  kubectl get deployments -n confighubplaceholder"
+    echo "  kubectl get pods -n confighubplaceholder -l app=reference-data"
+    echo "  kubectl logs -n confighubplaceholder -l app=reference-data"
     ;;
 
   2)
